@@ -1,0 +1,24 @@
+/* Main layout: sidebar + content */
+.layout-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 250px;  /* sidebar width */
+  transition: margin-left 0.3s ease;
+}
+
+.page-content {
+  padding: 40px;
+  background: #f7f5f0;
+  min-height: calc(100vh - 70px); /* navbar height */
+}
+
+/* Responsive: collapse sidebar on small screens */
+@media (max-width: 768px) {
+  .main-area { margin-left: 0; }
+}

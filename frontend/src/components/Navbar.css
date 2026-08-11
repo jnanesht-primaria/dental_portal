@@ -1,0 +1,131 @@
+.navbar {
+  height: 70px;
+  background: #ffffff;
+  border-bottom: 1px solid #e8e3d6;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  position: relative;
+  z-index: 100;
+}
+
+/* ---- Left: Brand ---- */
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 18px;
+  color: #1f3a3d;
+}
+.brand-icon {
+  font-size: 24px;
+}
+.brand-name {
+  letter-spacing: -0.5px;
+}
+
+/* ---- Right: User Info ---- */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.user-role {
+  background: #e8e3d6;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2b2b28;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1f3a3d;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  user-select: none;
+}
+.user-avatar:hover {
+  background: #16292b;
+  transform: scale(1.05);
+}
+
+/* ---- Dropdown Menu ---- */
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border: 1px solid #edeae0;
+  min-width: 220px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: default;
+  transition: background 0.15s;
+}
+.dropdown-item strong {
+  font-size: 14px;
+  color: #1f3a3d;
+}
+.dropdown-item .dropdown-email {
+  font-size: 12px;
+  color: #8a8577;
+}
+.dropdown-divider {
+  height: 1px;
+  background: #edeae0;
+  margin: 0 12px;
+}
+.dropdown-item:last-child {
+  cursor: pointer;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  color: #a0402a;
+  font-weight: 500;
+}
+.dropdown-item:last-child:hover {
+  background: #fbeae5;
+}
+.logout-icon {
+  font-size: 18px;
+}
