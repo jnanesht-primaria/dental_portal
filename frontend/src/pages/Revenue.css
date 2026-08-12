@@ -189,8 +189,7 @@
 .bill-header {
   text-align: center;
   margin-bottom: 24px;
-  border-bottom: 2px solid #1f3a3d;
-  padding-bottom: 16px;
+  padding-bottom: 0px;
 }
 .bill-header h2 {
   font-size: 24px;
@@ -202,6 +201,23 @@
   margin: 4px 0;
   font-size: 14px;
   color: #5b5b54;
+}
+
+/* --- Doctor Name Left Aligned Below Period --- */
+.doctor-name-line-left {
+  text-align: left;
+  margin: 6px 0 2px 0 !important;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1f3a3d;
+}
+
+/* --- Thick Separator Line under Doctor Name --- */
+.header-separator {
+  width: 100%;
+  height: 2px;
+  background-color: #1f3a3d;
+  margin: 8px 0 16px 0;
 }
 
 .bill-table {
@@ -227,62 +243,6 @@
   font-weight: 600;
 }
 
-/* ============================================================ */
-/*                    PRINT STYLES – BILL ONLY                   */
-/* ============================================================ */
-/* ============================================================ */
-/*                    PRINT STYLES – BILL ONLY                   */
-/* ============================================================ */
-@media print {
-  /* Hide UI */
-  .sidebar, .navbar, .filters, .no-print, .page > h2, .page > p, button, .error-message {
-    display: none !important;
-  }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-    background: white;
-  }
-  .page {
-    max-width: 100%;
-    padding: 0;
-    margin: 0;
-    height: 100%;
-  }
-  .bill-container {
-    margin: 0 auto;
-    padding: 10px 15px;
-    border: none;
-    box-shadow: none;
-    background: white;
-    height: auto;
-  }
-
-  /* ----- Force green header with white text ----- */
-  .bill-table thead {
-    background: #2e7d32 !important;
-  }
-  .bill-table thead th {
-    background: #2e7d32 !important;
-    color: white !important;
-    border-color: #1b5e20 !important;
-  }
-  .bill-table th {
-    background: #2e7d32 !important;
-    color: white !important;
-  }
-
-  .bill-table td {
-    border-color: #333 !important;
-  }
-  .total-row {
-    background: #e8e3d6 !important;
-    font-weight: bold !important;
-  }
-}
 /* --- 2x2 Description Grid for Doctor Bills --- */
 .desc-grid {
   display: grid;
@@ -301,7 +261,7 @@
   font-size: 13px;
   border-right: 1px solid #d8d3c7;
   border-bottom: 1px solid #d8d3c7;
-  background: #fcfcfb; /* optional subtle background */
+  background: #fcfcfb;
 }
 
 /* Remove right border for the 2nd column (even elements) */
@@ -313,3 +273,115 @@
 .desc-cell:nth-last-child(-n+2) {
   border-bottom: none;
 }
+/* ============================================================ */
+/*                    PRINT STYLES                                */
+/* ============================================================ */
+@media print {
+  /* Hide UI elements that shouldn't print */
+  .sidebar, .navbar, .filters, .no-print, .page > h2, .page > p, button, .error-message {
+    display: none !important;
+  }
+
+  /* Force the browser to actually print background colors      */
+  /* (without this, headers/stripes/highlights all vanish)       */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: visible;
+    background: white;
+  }
+  .page {
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+    height: auto;
+  }
+  .bill-container {
+    margin: 0 auto;
+    padding: 10px 15px;
+    border: none;
+    box-shadow: none;
+    background: white;
+    height: auto;
+  }
+
+  /* ---- Header block ---- */
+  .bill-header h2 {
+    color: #1f3a3d !important;
+  }
+  .bill-header p {
+    color: #2b2b28 !important;
+  }
+  .doctor-name-line-left {
+    color: #1f3a3d !important;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .header-separator {
+    background-color: #1f3a3d !important;
+  }
+
+  /* ---- Table: keep the dark header row visible ---- */
+  .bill-table {
+    border-collapse: collapse;
+  }
+  .bill-table thead {
+    background: #1f3a3d !important;
+    color: #f7f5f0 !important;
+  }
+  .bill-table th {
+    background: #1f3a3d !important;
+    color: #f7f5f0 !important;
+    border: 1px solid #1f3a3d !important;
+    font-weight: 700 !important;
+  }
+  .bill-table td {
+    border: 1px solid #999 !important;
+  }
+
+  /* ---- Keep the striped rows visible ---- */
+  .bill-table tbody tr:nth-child(even) {
+    background: #f0ede5 !important;
+  }
+  .bill-table tbody tr:nth-child(odd) {
+    background: #ffffff !important;
+  }
+
+  /* ---- Highlight the total row ---- */
+  .total-row td {
+    background: #e8e3d6 !important;
+    font-weight: bold !important;
+    border-top: 2px solid #1f3a3d !important;
+  }
+
+  /* ---- Description grid borders ---- */
+  .desc-grid {
+    border: 1px solid #666 !important;
+  }
+  .desc-cell {
+    border-color: #999 !important;
+    background: #fcfcfb !important;
+  }
+
+  /* Avoid a row splitting across a page break */
+  .bill-table tr {
+    page-break-inside: avoid;
+  }
+}
+/* ---- Description grid: full borders on all 4 cells for print ---- */
+  .desc-grid {
+    border: 1px solid #444 !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .desc-cell {
+    border: 1px solid #444 !important;
+    background: #fcfcfb !important;
+  }

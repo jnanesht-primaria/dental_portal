@@ -97,10 +97,8 @@ const AddEntry = () => {
       return;
     }
 
-    // Join the 4 description fields with newlines
-    const combinedDescription = [form.desc1, form.desc2, form.desc3, form.desc4]
-      .filter(text => text.trim() !== '') 
-      .join('\n');
+    // --- CHANGED HERE: Removed the .filter() to preserve empty lines exactly ---
+    const combinedDescription = [form.desc1, form.desc2, form.desc3, form.desc4].join('\n');
 
     const payload = {
       entry_date: form.entry_date,

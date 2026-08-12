@@ -166,10 +166,17 @@ const Revenue = () => {
             <div className="bill-container" id="bill-content">
               <div className="bill-header">
                 <h2>THE DENTAL ART LABORATORY</h2>
-                <p>Kamala Enclave, 3rd Floor, Near By Kanyakha Homes, Kugler Hospital Road, Kothapet, GUNTUR-522001.</p>
-                <p><strong>Doctor's Name:</strong> {doctorName}</p>
+                <p className="address-line">Kamala Enclave, 3rd Floor, Near By Kanyakha Homes, Kugler Hospital Road, Kothapet, GUNTUR-522001.</p>
+                
+                {/* Centered elements */}
                 <p><strong>Hospital:</strong> {selectedHospital ? hospitals.find(h => h.id === parseInt(selectedHospital))?.name || 'All' : 'All'}</p>
                 <p><strong>Period:</strong> {dateFrom} to {dateTo}</p>
+                
+                {/* Left-aligned Doctor Name */}
+                <p className="doctor-name-line-left"><strong>Doctor name:</strong> {doctorName}</p>
+                
+                {/* Thick Separator Line */}
+                <div className="header-separator"></div>
               </div>
 
               <table className="bill-table">
