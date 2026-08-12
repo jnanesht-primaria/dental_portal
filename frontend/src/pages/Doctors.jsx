@@ -1,3 +1,4 @@
+// frontend/src/pages/Doctors.jsx
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import './Doctors.css';
@@ -8,6 +9,10 @@ const Doctors = () => {
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // NEW: State for manual hospital input
+  const [manualHospitals, setManualHospitals] = useState('');
+
   const [form, setForm] = useState({
     doctor_name: '',
     designation: '',
@@ -16,7 +21,7 @@ const Doctors = () => {
     address: '',
     role: '',
     status: 'Active',
-    hospital_ids: []
+    hospital_ids: [] // Kept for backend compatibility
   });
 
   useEffect(() => {
@@ -37,13 +42,45 @@ const Doctors = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editing) {
-        await api.put(`/api/doctors/${editing}`, form);
-      } else {
-        await api.post('/api/doctors', form);
+      let finalHospitalIds = [...form.hospital_ids];
+      
+      // 1. Process manually entered hospital names
+      if (manualHospitals.trim() !== '') {
+        // Split by comma, trim spaces, and ignore empty entries
+        const hospitalNames = manualHospitals.split(',').map(s => s.trim()).filter(s => s !== '');
+        const newlyCreatedIds = [];
+
+        for (const name of hospitalNames) {
+          // Check if it exists in the currently loaded hospitals list
+          const existing = hospitals.find(h => h.hospital_name.toLowerCase() === name.toLowerCase());
+          if (existing) {
+            newlyCreatedIds.push(existing.id);
+          } else {
+            // If not found, auto-create the hospital
+            const res = await api.post('/api/hospitals', { 
+              hospital_name: name, 
+              status: 'Active', 
+              address: '' 
+            });
+            newlyCreatedIds.push(res.data.id);
+          }
+        }
+        
+        // Merge existing IDs with new IDs and remove duplicates
+        finalHospitalIds = [...new Set([...finalHospitalIds, ...newlyCreatedIds])];
       }
+
+      // 2. Submit the doctor data
+      const payload = { ...form, hospital_ids: finalHospitalIds };
+
+      if (editing) {
+        await api.put(`/api/doctors/${editing}`, payload);
+      } else {
+        await api.post('/api/doctors', payload);
+      }
+
       resetForm();
-      fetchDoctors();
+      fetchDoctors(); // Refresh the list
     } catch (err) {
       alert(err.response?.data?.error || 'Error saving doctor');
     }
@@ -60,6 +97,7 @@ const Doctors = () => {
       status: 'Active',
       hospital_ids: []
     });
+    setManualHospitals(''); // Reset manual input
     setEditing(null);
     setShowForm(false);
   };
@@ -71,21 +109,14 @@ const Doctors = () => {
     }
   };
 
-  const handleHospitalToggle = (hospitalId) => {
-    setForm(prev => {
-      const ids = prev.hospital_ids.includes(hospitalId)
-        ? prev.hospital_ids.filter(id => id !== hospitalId)
-        : [...prev.hospital_ids, hospitalId];
-      return { ...prev, hospital_ids: ids };
-    });
-  };
-
   const handleEdit = (doctor) => {
     setEditing(doctor.id);
     setForm({
       ...doctor,
       hospital_ids: doctor.hospitals.map(h => h.id)
     });
+    // Convert existing hospital list into a comma-separated string for the manual input
+    setManualHospitals(doctor.hospitals.map(h => h.hospital_name).join(', '));
     setShowForm(true);
   };
 
@@ -118,6 +149,7 @@ const Doctors = () => {
             status: 'Active',
             hospital_ids: []
           });
+          setManualHospitals(''); // Clear manual input
         }}
       >
         + Add Doctor
@@ -176,25 +208,22 @@ const Doctors = () => {
             <option value="Inactive">Inactive</option>
           </select>
 
-          {/* Hospital checkboxes */}
-          <div className="hospital-checkbox-group">
-            <span className="label">Hospitals</span>
-            <div className="checkbox-grid">
-              {hospitals.map(h => (
-                <label key={h.id} className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    value={h.id}
-                    checked={form.hospital_ids.includes(h.id)}
-                    onChange={() => handleHospitalToggle(h.id)}
-                  />
-                  {h.hospital_name}
-                </label>
-              ))}
-            </div>
+          {/* REPLACED: Manual Hospital Input Field */}
+          <div className="form-group" style={{ marginTop: '10px' }}>
+            <label style={{ fontWeight: 500, display: 'block', marginBottom: '5px' }}>Hospitals (Manual Entry)</label>
+            <input
+              type="text"
+              placeholder="e.g. City Dental Clinic, Smile Care Hospital"
+              value={manualHospitals}
+              onChange={(e) => setManualHospitals(e.target.value)}
+              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '6px' }}
+            />
+            <small style={{ color: '#8a8577', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+              Enter hospital names separated by commas. New names will be created automatically.
+            </small>
           </div>
 
-          <div className="form-actions">
+          <div className="form-actions" style={{ marginTop: '15px' }}>
             <button type="submit">{editing ? 'Update' : 'Add'} Doctor</button>
             <button type="button" onClick={resetForm}>Cancel</button>
           </div>

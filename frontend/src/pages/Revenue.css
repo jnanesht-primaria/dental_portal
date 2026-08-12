@@ -283,3 +283,33 @@
     font-weight: bold !important;
   }
 }
+/* --- 2x2 Description Grid for Doctor Bills --- */
+.desc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid #d8d3c7;
+  border-radius: 4px;
+  width: fit-content;
+  min-width: 80px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.desc-cell {
+  padding: 6px 10px;
+  text-align: center;
+  font-size: 13px;
+  border-right: 1px solid #d8d3c7;
+  border-bottom: 1px solid #d8d3c7;
+  background: #fcfcfb; /* optional subtle background */
+}
+
+/* Remove right border for the 2nd column (even elements) */
+.desc-cell:nth-child(2n) {
+  border-right: none;
+}
+
+/* Remove bottom border for the last row (last 2 elements) */
+.desc-cell:nth-last-child(-n+2) {
+  border-bottom: none;
+}

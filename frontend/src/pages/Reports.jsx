@@ -1,7 +1,8 @@
+// frontend/src/pages/Reports.jsx
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { saveAs } from 'file-saver';
-import './Reports.css'; // we'll create this
+import './Reports.css'; 
 
 const Reports = () => {
   const [dateFrom, setDateFrom] = useState(
@@ -189,19 +190,33 @@ const Reports = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {entries.map((e, idx) => (
-                    <tr key={e.id}>
-                      <td>{idx + 1}</td>
-                      <td>{e.entry_date}</td>
-                      <td>{e.doctor_name}</td>
-                      <td>{e.hospital_name}</td>
-                      <td>{e.description}</td>
-                      <td>{e.no_of_units}</td>
-                      <td>{e.work_type}</td>
-                      <td>{e.patient_name}</td>
-                      <td>₹{e.amount.toFixed(2)}</td>
-                    </tr>
-                  ))}
+                  {entries.map((e, idx) => {
+                    // Split the description by newline into 4 parts
+                    const lines = (e.description || '').split('\n');
+                    return (
+                      <tr key={e.id}>
+                        <td>{idx + 1}</td>
+                        <td>{e.entry_date}</td>
+                        <td>{e.doctor_name}</td>
+                        <td>{e.hospital_name}</td>
+                        
+                        {/* NEW 2x2 Description Grid */}
+                        <td>
+                          <div className="desc-grid">
+                            <div className="desc-cell">{lines[0] || ''}</div>
+                            <div className="desc-cell">{lines[1] || ''}</div>
+                            <div className="desc-cell">{lines[2] || ''}</div>
+                            <div className="desc-cell">{lines[3] || ''}</div>
+                          </div>
+                        </td>
+
+                        <td>{e.no_of_units}</td>
+                        <td>{e.work_type}</td>
+                        <td>{e.patient_name}</td>
+                        <td>₹{e.amount.toFixed(2)}</td>
+                      </tr>
+                    );
+                  })}
                   <tr className="total-row">
                     <td colSpan="8" style={{ textAlign: 'right', fontWeight: 'bold' }}>TOTAL</td>
                     <td style={{ fontWeight: 'bold' }}>₹{totalAmount.toFixed(2)}</td>

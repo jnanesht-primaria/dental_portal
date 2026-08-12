@@ -1,3 +1,4 @@
+// frontend/src/pages/AddEntry.jsx
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import './AddEntry.css';
@@ -10,13 +11,18 @@ const AddEntry = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingEntryId, setEditingEntryId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // State includes 4 description lines, manual work_type, and manual no_of_units
   const [form, setForm] = useState({
     entry_date: new Date().toISOString().split('T')[0],
     doctor_id: '',
     hospital_id: '',
     patient_name: '',
-    description: '',
-    no_of_units: 1,
+    desc1: '',
+    desc2: '',
+    desc3: '',
+    desc4: '',
+    no_of_units: '1',
     shade_type: '',
     work_type: '',
     amount: ''
@@ -39,7 +45,7 @@ const AddEntry = () => {
   const fetchRecentEntries = async () => {
     setLoadingEntries(true);
     try {
-      const res = await api.get('/api/entries?limit=50'); // fetch more for search
+      const res = await api.get('/api/entries?limit=50');
       setEntries(res.data);
     } catch (err) {
       console.error('Error fetching entries:', err);
@@ -66,8 +72,8 @@ const AddEntry = () => {
       doctor_id: '',
       hospital_id: '',
       patient_name: '',
-      description: '',
-      no_of_units: 1,
+      desc1: '', desc2: '', desc3: '', desc4: '',
+      no_of_units: '1',
       shade_type: '',
       work_type: '',
       amount: ''
@@ -91,15 +97,20 @@ const AddEntry = () => {
       return;
     }
 
+    // Join the 4 description fields with newlines
+    const combinedDescription = [form.desc1, form.desc2, form.desc3, form.desc4]
+      .filter(text => text.trim() !== '') 
+      .join('\n');
+
     const payload = {
       entry_date: form.entry_date,
       doctor_id: parseInt(form.doctor_id),
       hospital_id: parseInt(form.hospital_id),
       patient_name: form.patient_name,
-      description: form.description || '',
-      no_of_units: parseInt(form.no_of_units) || 1,
+      description: combinedDescription,
+      no_of_units: parseInt(form.no_of_units) || 1, 
       shade_type: form.shade_type || '',
-      work_type: form.work_type || '',
+      work_type: form.work_type || '', 
       amount: amountValue
     };
 
@@ -118,20 +129,29 @@ const AddEntry = () => {
     }
   };
 
+  // --- THIS HANDLES THE EDIT CLICK AND POPULATES THE FIELDS ---
   const handleEdit = (entry) => {
     setEditingEntryId(entry.id);
+    
+    // Split the existing description into 4 separate lines for the 2x2 grid
+    const descriptionLines = (entry.description || '').split('\n');
+
     setForm({
       entry_date: entry.entry_date,
       doctor_id: entry.doctor_id,
       hospital_id: entry.hospital_id,
       patient_name: entry.patient_name,
-      description: entry.description || '',
-      no_of_units: entry.no_of_units,
+      desc1: descriptionLines[0] || '',
+      desc2: descriptionLines[1] || '',
+      desc3: descriptionLines[2] || '',
+      desc4: descriptionLines[3] || '',
+      no_of_units: entry.no_of_units.toString(), // Populates the manual Unit field
       shade_type: entry.shade_type || '',
-      work_type: entry.work_type || '',
+      work_type: entry.work_type || '', // Populates the manual Work Type field
       amount: entry.amount.toString()
     });
-    // Load hospitals for the selected doctor
+
+    // Load hospitals for the selected doctor so the dropdown works correctly
     const doctor = doctors.find(d => d.id === entry.doctor_id);
     if (doctor) {
       setHospitals(doctor.hospitals || []);
@@ -139,7 +159,6 @@ const AddEntry = () => {
     setShowForm(true);
   };
 
-  // Filter entries based on search term
   const filteredEntries = entries.filter(entry => {
     const term = searchTerm.toLowerCase();
     return (
@@ -155,14 +174,13 @@ const AddEntry = () => {
     <div className="page">
       <h2>Add New Dental Entry</h2>
 
-      {/* Add Entry Button */}
       {!showForm && (
         <button className="add-entry-btn" onClick={() => setShowForm(true)}>
           + Add Entry
         </button>
       )}
 
-      {/* Entry Form - visible when showForm is true */}
+      {/* Entry Form */}
       {showForm && (
         <form onSubmit={handleSubmit} className="vertical-form">
           <div className="form-header">
@@ -192,27 +210,29 @@ const AddEntry = () => {
             <input type="text" value={form.patient_name} onChange={(e) => setForm({...form, patient_name: e.target.value})} required />
           </label>
 
-          <label>Description
-            <textarea value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} />
-          </label>
+          {/* 2x2 Grid for Description */}
+          <div className="desc-container">
+            <label className="section-label">Description</label>
+            <div className="description-grid">
+              <input type="text" placeholder="Line 1" value={form.desc1} onChange={(e) => setForm({...form, desc1: e.target.value})} />
+              <input type="text" placeholder="Line 2" value={form.desc2} onChange={(e) => setForm({...form, desc2: e.target.value})} />
+              <input type="text" placeholder="Line 3" value={form.desc3} onChange={(e) => setForm({...form, desc3: e.target.value})} />
+              <input type="text" placeholder="Line 4" value={form.desc4} onChange={(e) => setForm({...form, desc4: e.target.value})} />
+            </div>
+          </div>
 
+          {/* Manual No. of Units */}
           <label>No. of Units
-            <input type="number" value={form.no_of_units} onChange={(e) => setForm({...form, no_of_units: parseInt(e.target.value) || 1})} min="1" />
+            <input type="text" placeholder="Enter units (e.g. 2)" value={form.no_of_units} onChange={(e) => setForm({...form, no_of_units: e.target.value})} />
           </label>
 
           <label>Shade Type
             <input type="text" value={form.shade_type} onChange={(e) => setForm({...form, shade_type: e.target.value})} />
           </label>
 
+          {/* Manual Work Type */}
           <label>Work Type
-            <select value={form.work_type} onChange={(e) => setForm({...form, work_type: e.target.value})}>
-              <option value="">Select</option>
-              <option value="Crown">Crown</option>
-              <option value="Bridge">Bridge</option>
-              <option value="Implant">Implant</option>
-              <option value="Denture">Denture</option>
-              <option value="Other">Other</option>
-            </select>
+            <input type="text" placeholder="Enter work type manually (e.g. Crown)" value={form.work_type} onChange={(e) => setForm({...form, work_type: e.target.value})} />
           </label>
 
           <label>Amount (₹)
@@ -240,7 +260,6 @@ const AddEntry = () => {
         )}
       </div>
 
-      {/* Recent Entries - always visible */}
       <div className="recent-entries">
         <h3>Recent Entries</h3>
         {loadingEntries ? (
