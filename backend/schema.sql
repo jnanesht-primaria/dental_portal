@@ -17,9 +17,8 @@ CREATE TABLE IF NOT EXISTS users (
   created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Demo / seed account for local testing only.
+-- Demo / seed account for local testing.
 -- Username: admin
--- Email:    admin@dentallab.local
 -- Password: Lab@Demo123
 -- (password_hash below was generated with werkzeug.security.generate_password_hash)
 INSERT INTO users (username, email, password_hash, full_name, role)
@@ -31,9 +30,6 @@ VALUES (
   'admin'
 )
 ON DUPLICATE KEY UPDATE username = username;
-
--- This account exists only so you can log in during development.
--- Delete or replace it (see backend/create_user.py) before deploying anywhere real.
 select * from users;
 CREATE TABLE IF NOT EXISTS doctors (
   id            INT AUTO_INCREMENT PRIMARY KEY,
@@ -175,3 +171,14 @@ WHERE doctor_id = 1
 AND DATE(entry_date) >= '2026-08-01' 
 AND DATE(entry_date) <= '2026-08-11' 
 ORDER BY entry_date DESC;
+USE dental_lab;
+
+ALTER TABLE dental_entries
+  ADD COLUMN paid_amount DECIMAL(10,2) NOT NULL DEFAULT 0 AFTER amount,
+  ADD COLUMN balance_amount DECIMAL(10,2) NOT NULL DEFAULT 0 AFTER paid_amount;
+
+-- Backfill existing rows so balance_amount reflects amount - paid_amount
+-- (paid_amount is 0 for all existing rows, so balance = amount for old entries)
+UPDATE dental_entries
+SET balance_amount = amount - paid_amount;
+show tables;
