@@ -59,23 +59,27 @@ def list_entries():
             query = query.limit(limit)
         entries = query.all()
 
-        result = [{
-            'id': e.id,
-            'entry_no': e.entry_no,
-            'entry_date': e.entry_date.isoformat(),
-            'doctor_id': e.doctor_id,
-            'doctor_name': e.doctor.doctor_name,
-            'hospital_id': e.hospital_id,
-            'hospital_name': e.hospital.hospital_name,
-            'patient_name': e.patient_name,
-            'description': e.description,
-            'no_of_units': e.no_of_units,
-            'shade_type': e.shade_type,
-            'work_type': e.work_type,
-            'amount': float(e.amount),
-            'created_at': e.created_at.isoformat() if e.created_at else None
-        } for e in entries]
-
+        # --- UPDATED: Properly serialize list with Doctor and Hospital names ---
+        result = []
+        for entry in entries:
+            result.append({
+                'id': entry.id,
+                'entry_no': entry.entry_no,
+                'entry_date': entry.entry_date.isoformat(),
+                'doctor_id': entry.doctor_id,
+                'doctor_name': entry.doctor.doctor_name if entry.doctor else '',  # <--- FIXED
+                'hospital_id': entry.hospital_id,
+                'hospital_name': entry.hospital.hospital_name if entry.hospital else '', # <--- FIXED
+                'patient_name': entry.patient_name,
+                'description': entry.description,
+                'no_of_units': entry.no_of_units,
+                'shade_type': entry.shade_type,
+                'work_type': entry.work_type,
+                'amount': float(entry.amount),
+                'paid_amount': float(entry.paid_amount or 0),
+                'balance_amount': float(entry.balance_amount if entry.balance_amount is not None else (entry.amount - (entry.paid_amount or 0)))
+            })
+            
         return jsonify(result)
     except Exception as e:
         import traceback
@@ -90,12 +94,16 @@ def get_entry_by_id(entry_id):
         entry = get_entry(entry_id)
         if not entry:
             return jsonify({'error': 'Entry not found'}), 404
+        
+        # --- UPDATED: Return names when editing a single entry ---
         return jsonify({
             'id': entry.id,
             'entry_no': entry.entry_no,
             'entry_date': entry.entry_date.isoformat(),
             'doctor_id': entry.doctor_id,
+            'doctor_name': entry.doctor.doctor_name if entry.doctor else '', # <--- FIXED
             'hospital_id': entry.hospital_id,
+            'hospital_name': entry.hospital.hospital_name if entry.hospital else '', # <--- FIXED
             'patient_name': entry.patient_name,
             'description': entry.description,
             'no_of_units': entry.no_of_units,

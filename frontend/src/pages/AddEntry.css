@@ -374,3 +374,41 @@
   border-color: #1f3a3d;
   box-shadow: 0 0 0 3px rgba(31,58,61,0.1);
 }
+/* ---- Paid / Balance amount row ---- */
+.payment-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 4px 0;
+}
+
+.payment-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2b2b28;
+}
+
+.payment-grid input {
+  padding: 10px 12px;
+  border: 1.5px solid #d8d3c7;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fafafa;
+  box-sizing: border-box;
+}
+
+.balance-readonly {
+  background: #f0ede5 !important;
+  color: #1f3a3d;
+  font-weight: 600;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .payment-grid {
+    grid-template-columns: 1fr;
+  }
+}

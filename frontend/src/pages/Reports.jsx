@@ -17,7 +17,9 @@ const Reports = () => {
   const [hospitals, setHospitals] = useState([]);
   const [entries, setEntries] = useState([]);
   const [filtered, setFiltered] = useState(false);
-  const [totalAmount, setTotalAmount] = useState(0);
+const [totalAmount, setTotalAmount] = useState(0);
+const [totalPaid, setTotalPaid] = useState(0);
+const [totalBalance, setTotalBalance] = useState(0);
   const [error, setError] = useState(null);
 
   // Load doctors & hospitals
@@ -64,10 +66,13 @@ const Reports = () => {
         throw new Error('Unexpected response format');
       }
 
-      setEntries(res.data);
-      const total = res.data.reduce((sum, e) => sum + e.amount, 0);
-      setTotalAmount(total);
-      setFiltered(true);
+setEntries(res.data);
+const total = res.data.reduce((sum, e) => sum + e.amount, 0);
+const paid = res.data.reduce((sum, e) => sum + (e.paid_amount ?? 0), 0);
+setTotalAmount(total);
+setTotalPaid(paid);
+setTotalBalance(total - paid);
+setFiltered(true);
     } catch (err) {
       console.error('❌ Error fetching report:', err);
       setError(err.message || 'Failed to fetch report');
@@ -175,54 +180,58 @@ const Reports = () => {
                 {hospitalId && <p><strong>Hospital:</strong> {getHospitalName(parseInt(hospitalId))}</p>}
               </div>
 
-              <table className="bill-table">
-                <thead>
-                  <tr>
-                    <th>No.</th>
-                    <th>Date</th>
-                    <th>Doctor</th>
-                    <th>Hospital</th>
-                    <th>Description</th>
-                    <th>Units</th>
-                    <th>Work Type</th>
-                    <th>Patient</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {entries.map((e, idx) => {
-                    // Split the description by newline into 4 parts
-                    const lines = (e.description || '').split('\n');
-                    return (
-                      <tr key={e.id}>
-                        <td>{idx + 1}</td>
-                        <td>{e.entry_date}</td>
-                        <td>{e.doctor_name}</td>
-                        <td>{e.hospital_name}</td>
-                        
-                        {/* NEW 2x2 Description Grid */}
-                        <td>
-                          <div className="desc-grid">
-                            <div className="desc-cell">{lines[0] || ''}</div>
-                            <div className="desc-cell">{lines[1] || ''}</div>
-                            <div className="desc-cell">{lines[2] || ''}</div>
-                            <div className="desc-cell">{lines[3] || ''}</div>
-                          </div>
-                        </td>
-
-                        <td>{e.no_of_units}</td>
-                        <td>{e.work_type}</td>
-                        <td>{e.patient_name}</td>
-                        <td>₹{e.amount.toFixed(2)}</td>
-                      </tr>
-                    );
-                  })}
-                  <tr className="total-row">
-                    <td colSpan="8" style={{ textAlign: 'right', fontWeight: 'bold' }}>TOTAL</td>
-                    <td style={{ fontWeight: 'bold' }}>₹{totalAmount.toFixed(2)}</td>
-                  </tr>
-                </tbody>
-              </table>
+             <table className="bill-table">
+  <thead>
+    <tr>
+      <th>No.</th>
+      <th>Date</th>
+      <th>Doctor</th>
+      <th>Hospital</th>
+      <th>Description</th>
+      <th>Units</th>
+      <th>Work Type</th>
+      <th>Patient</th>
+      <th>Amount</th>
+      <th>Paid</th>
+      <th>Balance</th>
+    </tr>
+  </thead>
+  <tbody>
+    {entries.map((e, idx) => {
+      const lines = (e.description || '').split('\n');
+      const paid = e.paid_amount ?? 0;
+      const balance = e.balance_amount ?? (e.amount - paid);
+      return (
+        <tr key={e.id}>
+          <td>{idx + 1}</td>
+          <td>{e.entry_date}</td>
+          <td>{e.doctor_name}</td>
+          <td>{e.hospital_name}</td>
+          <td>
+            <div className="desc-grid">
+              <div className="desc-cell">{lines[0] || ''}</div>
+              <div className="desc-cell">{lines[1] || ''}</div>
+              <div className="desc-cell">{lines[2] || ''}</div>
+              <div className="desc-cell">{lines[3] || ''}</div>
+            </div>
+          </td>
+          <td>{e.no_of_units}</td>
+          <td>{e.work_type}</td>
+          <td>{e.patient_name}</td>
+          <td>₹{e.amount.toFixed(2)}</td>
+          <td>₹{paid.toFixed(2)}</td>
+          <td>₹{balance.toFixed(2)}</td>
+        </tr>
+      );
+    })}
+    <tr className="total-row">
+      <td colSpan="8" style={{ textAlign: 'right', fontWeight: 'bold' }}>TOTAL</td>
+      <td style={{ fontWeight: 'bold' }}>₹{totalAmount.toFixed(2)}</td>
+      <td style={{ fontWeight: 'bold' }}>₹{totalPaid.toFixed(2)}</td>
+      <td style={{ fontWeight: 'bold' }}>₹{totalBalance.toFixed(2)}</td>
+    </tr>
+  </tbody>
+</table>
             </div>
           ) : (
             <p style={{ marginTop: '20px', color: '#8a8577' }}>

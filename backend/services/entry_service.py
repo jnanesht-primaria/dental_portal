@@ -20,11 +20,19 @@ def create_entry(data, user_id):
         hospital_id = int(data['hospital_id'])
         amount = float(data['amount'])
         no_of_units = int(data.get('no_of_units', 1))
+        paid_amount = float(data.get('paid_amount', 0) or 0)
     except (ValueError, TypeError) as e:
         raise ValueError(f"Invalid data type: {str(e)}")
 
     if not (isinstance(amount, (int, float)) and amount > 0):
         raise ValueError("Amount must be a positive number")
+
+    if paid_amount < 0:
+        raise ValueError("Paid amount cannot be negative")
+    if paid_amount > amount:
+        raise ValueError("Paid amount cannot exceed the total amount")
+
+    balance_amount = amount - paid_amount
 
     doctor = Doctor.query.get(doctor_id)
     if not doctor:
@@ -50,6 +58,8 @@ def create_entry(data, user_id):
                 shade_type=data.get('shade_type'),
                 work_type=data.get('work_type'),
                 amount=amount,
+                paid_amount=paid_amount,
+                balance_amount=balance_amount,
                 created_by=user_id
             )
             db.session.add(entry)
@@ -86,9 +96,25 @@ def get_entry(entry_id):
 
 def update_entry(entry_id, data):
     entry = DentalEntry.query.get_or_404(entry_id)
+
+    new_amount = float(data['amount']) if data.get('amount') is not None else float(entry.amount)
+    new_paid = float(data['paid_amount']) if data.get('paid_amount') is not None else float(entry.paid_amount or 0)
+
+    if new_paid < 0:
+        raise ValueError("Paid amount cannot be negative")
+    if new_paid > new_amount:
+        raise ValueError("Paid amount cannot exceed the total amount")
+
     for key, value in data.items():
+        if key in ('paid_amount', 'balance_amount', 'amount'):
+            continue
         if hasattr(entry, key) and value is not None:
             setattr(entry, key, value)
+
+    entry.amount = new_amount
+    entry.paid_amount = new_paid
+    entry.balance_amount = new_amount - new_paid
+
     db.session.commit()
     return entry
 

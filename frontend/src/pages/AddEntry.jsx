@@ -11,8 +11,7 @@ const AddEntry = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingEntryId, setEditingEntryId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // State includes 4 description lines, manual work_type, and manual no_of_units
+
   const [form, setForm] = useState({
     entry_date: new Date().toISOString().split('T')[0],
     doctor_id: '',
@@ -25,7 +24,8 @@ const AddEntry = () => {
     no_of_units: '1',
     shade_type: '',
     work_type: '',
-    amount: ''
+    amount: '',
+    paid_amount: '',
   });
 
   useEffect(() => {
@@ -66,6 +66,13 @@ const AddEntry = () => {
     }
   };
 
+  // ─── Auto-calculated balance ───────────────────────────────
+  // Balance = Amount - Paid Amount. Recomputed live from the two inputs;
+  // never stored as separate user-editable state.
+  const amountNum = parseFloat(form.amount) || 0;
+  const paidNum = parseFloat(form.paid_amount) || 0;
+  const balanceAmount = amountNum - paidNum;
+
   const resetForm = () => {
     setForm({
       entry_date: new Date().toISOString().split('T')[0],
@@ -76,7 +83,8 @@ const AddEntry = () => {
       no_of_units: '1',
       shade_type: '',
       work_type: '',
-      amount: ''
+      amount: '',
+      paid_amount: '',
     });
     setHospitals([]);
     setEditingEntryId(null);
@@ -97,7 +105,16 @@ const AddEntry = () => {
       return;
     }
 
-    // --- CHANGED HERE: Removed the .filter() to preserve empty lines exactly ---
+    const paidValue = form.paid_amount === '' ? 0 : parseFloat(form.paid_amount);
+    if (isNaN(paidValue) || paidValue < 0) {
+      alert('Please enter a valid paid amount.');
+      return;
+    }
+    if (paidValue > amountValue) {
+      alert('Paid amount cannot be greater than the total amount.');
+      return;
+    }
+
     const combinedDescription = [form.desc1, form.desc2, form.desc3, form.desc4].join('\n');
 
     const payload = {
@@ -106,10 +123,12 @@ const AddEntry = () => {
       hospital_id: parseInt(form.hospital_id),
       patient_name: form.patient_name,
       description: combinedDescription,
-      no_of_units: parseInt(form.no_of_units) || 1, 
+      no_of_units: parseInt(form.no_of_units) || 1,
       shade_type: form.shade_type || '',
-      work_type: form.work_type || '', 
-      amount: amountValue
+      work_type: form.work_type || '',
+      amount: amountValue,
+      paid_amount: paidValue,
+      balance_amount: amountValue - paidValue,
     };
 
     try {
@@ -127,11 +146,9 @@ const AddEntry = () => {
     }
   };
 
-  // --- THIS HANDLES THE EDIT CLICK AND POPULATES THE FIELDS ---
   const handleEdit = (entry) => {
     setEditingEntryId(entry.id);
-    
-    // Split the existing description into 4 separate lines for the 2x2 grid
+
     const descriptionLines = (entry.description || '').split('\n');
 
     setForm({
@@ -143,13 +160,13 @@ const AddEntry = () => {
       desc2: descriptionLines[1] || '',
       desc3: descriptionLines[2] || '',
       desc4: descriptionLines[3] || '',
-      no_of_units: entry.no_of_units.toString(), // Populates the manual Unit field
+      no_of_units: entry.no_of_units.toString(),
       shade_type: entry.shade_type || '',
-      work_type: entry.work_type || '', // Populates the manual Work Type field
-      amount: entry.amount.toString()
+      work_type: entry.work_type || '',
+      amount: entry.amount.toString(),
+      paid_amount: (entry.paid_amount ?? 0).toString(),
     });
 
-    // Load hospitals for the selected doctor so the dropdown works correctly
     const doctor = doctors.find(d => d.id === entry.doctor_id);
     if (doctor) {
       setHospitals(doctor.hospitals || []);
@@ -157,14 +174,16 @@ const AddEntry = () => {
     setShowForm(true);
   };
 
+  // Defensive: guard every field with `|| ''` so a missing/undefined
+  // property from the API never crashes the filter with .toLowerCase().
   const filteredEntries = entries.filter(entry => {
     const term = searchTerm.toLowerCase();
     return (
-      entry.entry_no.toLowerCase().includes(term) ||
-      entry.patient_name.toLowerCase().includes(term) ||
-      entry.doctor_name.toLowerCase().includes(term) ||
-      entry.hospital_name.toLowerCase().includes(term) ||
-      (entry.work_type && entry.work_type.toLowerCase().includes(term))
+      (entry.entry_no || '').toLowerCase().includes(term) ||
+      (entry.patient_name || '').toLowerCase().includes(term) ||
+      (entry.doctor_name || '').toLowerCase().includes(term) ||
+      (entry.hospital_name || '').toLowerCase().includes(term) ||
+      (entry.work_type || '').toLowerCase().includes(term)
     );
   });
 
@@ -178,7 +197,6 @@ const AddEntry = () => {
         </button>
       )}
 
-      {/* Entry Form */}
       {showForm && (
         <form onSubmit={handleSubmit} className="vertical-form">
           <div className="form-header">
@@ -208,7 +226,6 @@ const AddEntry = () => {
             <input type="text" value={form.patient_name} onChange={(e) => setForm({...form, patient_name: e.target.value})} required />
           </label>
 
-          {/* 2x2 Grid for Description */}
           <div className="desc-container">
             <label className="section-label">Description</label>
             <div className="description-grid">
@@ -219,7 +236,6 @@ const AddEntry = () => {
             </div>
           </div>
 
-          {/* Manual No. of Units */}
           <label>No. of Units
             <input type="text" placeholder="Enter units (e.g. 2)" value={form.no_of_units} onChange={(e) => setForm({...form, no_of_units: e.target.value})} />
           </label>
@@ -228,7 +244,6 @@ const AddEntry = () => {
             <input type="text" value={form.shade_type} onChange={(e) => setForm({...form, shade_type: e.target.value})} />
           </label>
 
-          {/* Manual Work Type */}
           <label>Work Type
             <input type="text" placeholder="Enter work type manually (e.g. Crown)" value={form.work_type} onChange={(e) => setForm({...form, work_type: e.target.value})} />
           </label>
@@ -237,6 +252,28 @@ const AddEntry = () => {
             <input type="number" step="0.01" value={form.amount} onChange={(e) => setForm({...form, amount: e.target.value})} required />
           </label>
 
+          {/* ─── Paid Amount + auto-calculated Balance ─────────── */}
+          <div className="payment-grid">
+            <label>Paid Amount (₹)
+              <input
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={form.paid_amount}
+                onChange={(e) => setForm({ ...form, paid_amount: e.target.value })}
+              />
+            </label>
+
+            <label>Balance Amount (₹)
+              <input
+                type="text"
+                value={balanceAmount.toFixed(2)}
+                readOnly
+                className="balance-readonly"
+              />
+            </label>
+          </div>
+
           <div className="form-actions">
             <button type="submit">{editingEntryId ? 'Update' : 'Save'} Entry</button>
             <button type="button" onClick={resetForm}>Cancel</button>
@@ -244,7 +281,6 @@ const AddEntry = () => {
         </form>
       )}
 
-      {/* Search Bar */}
       <div className="search-section">
         <input
           type="text"
@@ -275,6 +311,8 @@ const AddEntry = () => {
                 <th>Patient</th>
                 <th>Work Type</th>
                 <th>Amount</th>
+                <th>Paid</th>
+                <th>Balance</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -287,7 +325,9 @@ const AddEntry = () => {
                   <td>{entry.hospital_name}</td>
                   <td>{entry.patient_name}</td>
                   <td>{entry.work_type}</td>
-                  <td>₹{entry.amount.toFixed(2)}</td>
+                  <td>₹{(entry.amount ?? 0).toFixed(2)}</td>
+                  <td>₹{(entry.paid_amount ?? 0).toFixed(2)}</td>
+                  <td>₹{(entry.balance_amount ?? ((entry.amount ?? 0) - (entry.paid_amount ?? 0))).toFixed(2)}</td>
                   <td>
                     <button onClick={() => handleEdit(entry)}>Edit</button>
                   </td>

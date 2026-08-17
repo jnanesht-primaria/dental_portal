@@ -48,7 +48,6 @@ class Hospital(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     entries = db.relationship('DentalEntry', backref='hospital', lazy=True, passive_deletes=True)
-
 class DentalEntry(db.Model):
     __tablename__ = 'dental_entries'
     id = db.Column(db.Integer, primary_key=True)
@@ -62,6 +61,8 @@ class DentalEntry(db.Model):
     shade_type = db.Column(db.String(20))
     work_type = db.Column(db.String(50))
     amount = db.Column(Numeric(10,2), nullable=False)
+    paid_amount = db.Column(Numeric(10,2), nullable=False, default=0)
+    balance_amount = db.Column(Numeric(10,2), nullable=False, default=0)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)

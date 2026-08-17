@@ -186,11 +186,24 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
+/* ---- Logo in Top-Left Corner ---- */
 .bill-header {
+  position: relative; /* Required for the logo to stick to the top-left */
   text-align: center;
   margin-bottom: 24px;
   padding-bottom: 0px;
 }
+
+.bill-logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 70px; /* Adjust size as needed */
+  height: auto;
+  object-fit: contain;
+  z-index: 1;
+}
+
 .bill-header h2 {
   font-size: 24px;
   font-weight: 700;
@@ -203,13 +216,27 @@
   color: #5b5b54;
 }
 
-/* --- Doctor Name Left Aligned Below Period --- */
-.doctor-name-line-left {
-  text-align: left;
-  margin: 6px 0 2px 0 !important;
+/* --- NEW: Doctor Left, Hospital Right, Both Bold --- */
+.header-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 6px 0 2px 0;
   font-size: 16px;
-  font-weight: 500;
   color: #1f3a3d;
+}
+
+.meta-left {
+  text-align: left;
+}
+
+.meta-right {
+  text-align: right;
+}
+
+.bold-value {
+  font-weight: 700;
 }
 
 /* --- Thick Separator Line under Doctor Name --- */
@@ -273,6 +300,7 @@
 .desc-cell:nth-last-child(-n+2) {
   border-bottom: none;
 }
+
 /* ============================================================ */
 /*                    PRINT STYLES                                */
 /* ============================================================ */
@@ -282,8 +310,7 @@
     display: none !important;
   }
 
-  /* Force the browser to actually print background colors      */
-  /* (without this, headers/stripes/highlights all vanish)       */
+  /* Force the browser to actually print background colors */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -312,6 +339,15 @@
     height: auto;
   }
 
+  /* ---- Logo in print ---- */
+  .bill-logo {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 70px !important;
+    height: auto !important;
+  }
+
   /* ---- Header block ---- */
   .bill-header h2 {
     color: #1f3a3d !important;
@@ -319,11 +355,19 @@
   .bill-header p {
     color: #2b2b28 !important;
   }
-  .doctor-name-line-left {
+
+  /* ---- New Left/Right Row Print Styling ---- */
+  .header-meta-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
     color: #1f3a3d !important;
-    text-decoration: underline;
-    text-underline-offset: 3px;
   }
+  .meta-left { text-align: left !important; }
+  .meta-right { text-align: right !important; }
+  .bold-value { font-weight: 700 !important; }
+
   .header-separator {
     background-color: #1f3a3d !important;
   }
@@ -363,20 +407,6 @@
 
   /* ---- Description grid borders ---- */
   .desc-grid {
-    border: 1px solid #666 !important;
-  }
-  .desc-cell {
-    border-color: #999 !important;
-    background: #fcfcfb !important;
-  }
-
-  /* Avoid a row splitting across a page break */
-  .bill-table tr {
-    page-break-inside: avoid;
-  }
-}
-/* ---- Description grid: full borders on all 4 cells for print ---- */
-  .desc-grid {
     border: 1px solid #444 !important;
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
@@ -385,3 +415,9 @@
     border: 1px solid #444 !important;
     background: #fcfcfb !important;
   }
+
+  /* Avoid a row splitting across a page break */
+  .bill-table tr {
+    page-break-inside: avoid;
+  }
+}

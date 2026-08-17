@@ -40,8 +40,8 @@ const Navbar = () => {
   return (
     <header className="navbar">
       <div className="navbar-brand">
-        <span className="brand-icon">🦷</span>
-        <span className="brand-name">Cusp & Crown</span>
+        {/* <span className="brand-icon">🦷</span> */}
+        <span className="brand-name">Life is short. Smile while you still have teeth.</span>
       </div>
 
       <div className="navbar-right" ref={dropdownRef}>

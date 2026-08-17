@@ -16,6 +16,8 @@ const Revenue = () => {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [totalPaid, setTotalPaid] = useState(0);
+  const [totalBalance, setTotalBalance] = useState(0);
   const [doctorName, setDoctorName] = useState('');
   const [error, setError] = useState(null);
   const [filtered, setFiltered] = useState(false);
@@ -72,7 +74,10 @@ const Revenue = () => {
 
       setEntries(res.data);
       const total = res.data.reduce((sum, e) => sum + e.amount, 0);
+      const paid = res.data.reduce((sum, e) => sum + (e.paid_amount ?? 0), 0);
       setTotalAmount(total);
+      setTotalPaid(paid);
+      setTotalBalance(total - paid);
       setFiltered(true);
     } catch (err) {
       console.error('❌ Error fetching entries:', err);
@@ -165,17 +170,26 @@ const Revenue = () => {
           {entries.length > 0 ? (
             <div className="bill-container" id="bill-content">
               <div className="bill-header">
+                {/* Logo added to the top-left corner */}
+                <img src="/logo.jpeg" alt="The Dental Art Laboratory" className="bill-logo" />
+                
                 <h2>THE DENTAL ART LABORATORY</h2>
                 <p className="address-line">Kamala Enclave, 3rd Floor, Near By Kanyakha Homes, Kugler Hospital Road, Kothapet, GUNTUR-522001.</p>
                 
-                {/* Centered elements */}
-                <p><strong>Hospital:</strong> {selectedHospital ? hospitals.find(h => h.id === parseInt(selectedHospital))?.name || 'All' : 'All'}</p>
                 <p><strong>Period:</strong> {dateFrom} to {dateTo}</p>
                 
-                {/* Left-aligned Doctor Name */}
-                <p className="doctor-name-line-left"><strong>Doctor name:</strong> {doctorName}</p>
+                {/* --- NEW ROW: Doctor Left, Hospital Right, both bold --- */}
+                <div className="header-meta-row">
+                  <div className="meta-left">
+                    <strong>Doctor name:</strong> <span className="bold-value">{doctorName}</span>
+                  </div>
+                  <div className="meta-right">
+                    <strong>Hospital:</strong> <span className="bold-value">
+                      {selectedHospital ? hospitals.find(h => h.id === parseInt(selectedHospital))?.name || 'All' : 'All'}
+                    </span>
+                  </div>
+                </div>
                 
-                {/* Thick Separator Line */}
                 <div className="header-separator"></div>
               </div>
 
@@ -189,18 +203,19 @@ const Revenue = () => {
                     <th>Work Type</th>
                     <th>Patient</th>
                     <th>Amount</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
                   </tr>
                 </thead>
                 <tbody>
                   {entries.map((e, idx) => {
-                    // Split the description by newline into 4 parts
                     const lines = (e.description || '').split('\n');
+                    const paid = e.paid_amount ?? 0;
+                    const balance = e.balance_amount ?? (e.amount - paid);
                     return (
                       <tr key={e.id}>
                         <td>{idx + 1}</td>
                         <td>{e.entry_date}</td>
-                        
-                        {/* 2x2 Description Grid */}
                         <td>
                           <div className="desc-grid">
                             <div className="desc-cell">{lines[0] || ''}</div>
@@ -209,17 +224,20 @@ const Revenue = () => {
                             <div className="desc-cell">{lines[3] || ''}</div>
                           </div>
                         </td>
-
                         <td>{e.no_of_units}</td>
                         <td>{e.work_type}</td>
                         <td>{e.patient_name}</td>
                         <td>₹{e.amount.toFixed(2)}</td>
+                        <td>₹{paid.toFixed(2)}</td>
+                        <td>₹{balance.toFixed(2)}</td>
                       </tr>
                     );
                   })}
                   <tr className="total-row">
                     <td colSpan="6" style={{ textAlign: 'right', fontWeight: 'bold' }}>TOTAL</td>
                     <td style={{ fontWeight: 'bold' }}>₹{totalAmount.toFixed(2)}</td>
+                    <td style={{ fontWeight: 'bold' }}>₹{totalPaid.toFixed(2)}</td>
+                    <td style={{ fontWeight: 'bold' }}>₹{totalBalance.toFixed(2)}</td>
                   </tr>
                 </tbody>
               </table>
