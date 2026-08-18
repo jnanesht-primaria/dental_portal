@@ -30,12 +30,12 @@ const Doctors = () => {
   }, []);
 
   const fetchDoctors = async () => {
-    const res = await api.get('/api/doctors');
+    const res = await api.get('/doctors');
     setDoctors(res.data);
   };
 
   const fetchHospitals = async () => {
-    const res = await api.get('/api/hospitals?active_only=true');
+    const res = await api.get('/hospitals?active_only=true');
     setHospitals(res.data);
   };
 
@@ -57,7 +57,7 @@ const Doctors = () => {
             newlyCreatedIds.push(existing.id);
           } else {
             // If not found, auto-create the hospital
-            const res = await api.post('/api/hospitals', { 
+            const res = await api.post('/hospitals', { 
               hospital_name: name, 
               status: 'Active', 
               address: '' 
@@ -76,7 +76,7 @@ const Doctors = () => {
       if (editing) {
         await api.put(`/api/doctors/${editing}`, payload);
       } else {
-        await api.post('/api/doctors', payload);
+        await api.post('/doctors', payload);
       }
 
       resetForm();
@@ -277,3 +277,4 @@ const Doctors = () => {
 };
 
 export default Doctors;
+

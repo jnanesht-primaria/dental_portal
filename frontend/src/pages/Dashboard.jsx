@@ -21,7 +21,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await api.get('/api/dashboard/stats');
+        const res = await api.get('/dashboard/stats');
         setStats(res.data);
       } catch (err) {
         console.error(err);
@@ -171,3 +171,4 @@ const ActionButton = ({ icon, label, onClick, color }) => (
 );
 
 export default Dashboard;
+

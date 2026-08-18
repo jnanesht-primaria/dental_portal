@@ -21,7 +21,7 @@ const Hospitals = () => {
 
   const fetchHospitals = async () => {
     try {
-      const res = await api.get('/api/hospitals');
+      const res = await api.get('/hospitals');
       setHospitals(res.data);
     } catch (err) {
       console.error(err);
@@ -34,7 +34,7 @@ const Hospitals = () => {
       if (editing) {
         await api.put(`/api/hospitals/${editing}`, form);
       } else {
-        await api.post('/api/hospitals', form);
+        await api.post('/hospitals', form);
       }
       resetForm();
       fetchHospitals();
@@ -188,3 +188,4 @@ const Hospitals = () => {
 };
 
 export default Hospitals;
+

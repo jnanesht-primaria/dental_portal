@@ -13,3 +13,4 @@ const ChartCard = ({ title, children }) => {
 };
 
 export default ChartCard;
+

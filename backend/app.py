@@ -1,5 +1,5 @@
 # backend/app.py
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from config import Config
 from models import db
@@ -10,6 +10,7 @@ from routes.entries import entry_bp
 from routes.revenue import revenue_bp
 from routes.reports import report_bp
 from routes.dashboard import dashboard_bp
+import os
 
 def create_app():
     app = Flask(__name__)
@@ -34,6 +35,19 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+
+    # ------------------------------------------------------------
+    # Serve React frontend static files (moved inside create_app)
+    # This must come AFTER all API blueprints
+    # ------------------------------------------------------------
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def serve_react(path):
+        static_dir = os.path.join(os.path.dirname(__file__), 'static')
+        if path and os.path.exists(os.path.join(static_dir, path)):
+            return send_from_directory(static_dir, path)
+        else:
+            return send_from_directory(static_dir, 'index.html')
 
     return app
 

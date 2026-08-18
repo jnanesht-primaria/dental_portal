@@ -27,8 +27,8 @@ const [totalBalance, setTotalBalance] = useState(0);
     const fetchData = async () => {
       try {
         const [dRes, hRes] = await Promise.all([
-          api.get('/api/doctors?active_only=true'),
-          api.get('/api/hospitals?active_only=true')
+          api.get('/doctors?active_only=true'),
+          api.get('/hospitals?active_only=true')
         ]);
         setDoctors(dRes.data);
         setHospitals(hRes.data);
@@ -59,7 +59,7 @@ const [totalBalance, setTotalBalance] = useState(0);
 
       console.log('🔍 Report params:', params);
 
-      const res = await api.get('/api/entries', { params });
+      const res = await api.get('/entries', { params });
       console.log('📥 Report data:', res.data);
 
       if (!Array.isArray(res.data)) {
@@ -97,7 +97,7 @@ setFiltered(true);
       if (doctorId) params.doctor_id = parseInt(doctorId);
       if (hospitalId) params.hospital_id = parseInt(hospitalId);
 
-      const response = await api.post('/api/reports/excel', params, {
+      const response = await api.post('/reports/excel', params, {
         responseType: 'blob'
       });
       const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -251,3 +251,4 @@ setFiltered(true);
 };
 
 export default Reports;
+

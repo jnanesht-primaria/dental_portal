@@ -25,7 +25,7 @@ const Revenue = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const res = await api.get('/api/doctors?active_only=true');
+        const res = await api.get('/doctors?active_only=true');
         setDoctors(res.data);
       } catch (err) {
         console.error('Error fetching doctors:', err);
@@ -65,7 +65,7 @@ const Revenue = () => {
       }
       console.log('🔍 Sending params:', params);
 
-      const res = await api.get('/api/entries', { params });
+      const res = await api.get('/entries', { params });
       console.log('📥 Response data:', res.data);
 
       if (!Array.isArray(res.data)) {
@@ -103,7 +103,7 @@ const Revenue = () => {
       if (selectedHospital) {
         params.hospital_id = parseInt(selectedHospital);
       }
-      const response = await api.post('/api/reports/excel', params, {
+      const response = await api.post('/reports/excel', params, {
         responseType: 'blob'
       });
       const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -260,3 +260,4 @@ const Revenue = () => {
 };
 
 export default Revenue;
+

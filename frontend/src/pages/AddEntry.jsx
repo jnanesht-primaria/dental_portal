@@ -35,7 +35,7 @@ const AddEntry = () => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await api.get('/api/doctors?active_only=true');
+      const res = await api.get('/doctors?active_only=true');
       setDoctors(res.data);
     } catch (err) {
       console.error('Error fetching doctors:', err);
@@ -45,7 +45,7 @@ const AddEntry = () => {
   const fetchRecentEntries = async () => {
     setLoadingEntries(true);
     try {
-      const res = await api.get('/api/entries?limit=50');
+      const res = await api.get('/entries?limit=50');
       setEntries(res.data);
     } catch (err) {
       console.error('Error fetching entries:', err);
@@ -136,7 +136,7 @@ const AddEntry = () => {
         await api.put(`/api/entries/${editingEntryId}`, payload);
         alert('Entry updated!');
       } else {
-        await api.post('/api/entries', payload);
+        await api.post('/entries', payload);
         alert('Entry saved!');
       }
       resetForm();
@@ -342,3 +342,4 @@ const AddEntry = () => {
 };
 
 export default AddEntry;
+
