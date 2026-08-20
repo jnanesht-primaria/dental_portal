@@ -2,6 +2,19 @@ from flask import Blueprint, request, jsonify
 from services.entry_service import create_entry, get_entries, get_entry, update_entry, delete_entry
 from utils.jwt_utils import token_required
 from datetime import datetime
+import logging
+import os
+
+# --- Setup logging to a file (so we can see errors when running as a service) ---
+LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
+os.makedirs(LOG_DIR, exist_ok=True)
+LOG_FILE = os.path.join(LOG_DIR, 'entry_errors.log')
+
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.ERROR,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 entry_bp = Blueprint('entries', __name__, url_prefix='/api/entries')
 
@@ -27,10 +40,10 @@ def add_entry():
         return jsonify({'error': str(ve)}), 400
     except Exception as e:
         import traceback
-        traceback.print_exc()
+        error_msg = traceback.format_exc()
+        logging.error(error_msg)
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# ---------- GET: List entries with optional filters and limit ----------
 @entry_bp.route('', methods=['GET'])
 @token_required
 def list_entries():
@@ -49,44 +62,57 @@ def list_entries():
         if 'work_type' in request.args:
             filters['work_type'] = request.args['work_type']
 
-        print("📥 Received filters:", filters)
-
         query = get_entries(filters)
-        print("🔍 SQL:", query)   # now inside try block
-
         limit = request.args.get('limit', type=int)
         if limit:
             query = query.limit(limit)
         entries = query.all()
 
-        # --- UPDATED: Properly serialize list with Doctor and Hospital names ---
         result = []
         for entry in entries:
+            # Safely get doctor name – try common attribute names
+            doctor_name = ''
+            if entry.doctor:
+                doctor_name = getattr(entry.doctor, 'doctor_name', None) or \
+                              getattr(entry.doctor, 'name', None) or \
+                              getattr(entry.doctor, 'full_name', '')
+            # Similarly for hospital
+            hospital_name = ''
+            if entry.hospital:
+                hospital_name = getattr(entry.hospital, 'hospital_name', None) or \
+                                getattr(entry.hospital, 'name', None) or ''
+
+            # Compute balance safely
+            amount = float(entry.amount or 0)
+            paid = float(entry.paid_amount or 0)
+            balance = amount - paid
+
             result.append({
                 'id': entry.id,
                 'entry_no': entry.entry_no,
                 'entry_date': entry.entry_date.isoformat(),
                 'doctor_id': entry.doctor_id,
-                'doctor_name': entry.doctor.doctor_name if entry.doctor else '',  # <--- FIXED
+                'doctor_name': doctor_name,
                 'hospital_id': entry.hospital_id,
-                'hospital_name': entry.hospital.hospital_name if entry.hospital else '', # <--- FIXED
+                'hospital_name': hospital_name,
                 'patient_name': entry.patient_name,
                 'description': entry.description,
                 'no_of_units': entry.no_of_units,
                 'shade_type': entry.shade_type,
                 'work_type': entry.work_type,
-                'amount': float(entry.amount),
-                'paid_amount': float(entry.paid_amount or 0),
-                'balance_amount': float(entry.balance_amount if entry.balance_amount is not None else (entry.amount - (entry.paid_amount or 0)))
+                'amount': amount,
+                'paid_amount': paid,
+                'balance_amount': balance
             })
-            
+
         return jsonify(result)
+
     except Exception as e:
         import traceback
-        traceback.print_exc()
+        error_msg = traceback.format_exc()
+        logging.error(error_msg)
         return jsonify({'error': str(e)}), 500
 
-# ---------- GET: Single entry ----------
 @entry_bp.route('/<int:entry_id>', methods=['GET'])
 @token_required
 def get_entry_by_id(entry_id):
@@ -94,27 +120,37 @@ def get_entry_by_id(entry_id):
         entry = get_entry(entry_id)
         if not entry:
             return jsonify({'error': 'Entry not found'}), 404
-        
-        # --- UPDATED: Return names when editing a single entry ---
+
+        doctor_name = ''
+        if entry.doctor:
+            doctor_name = getattr(entry.doctor, 'doctor_name', None) or \
+                          getattr(entry.doctor, 'name', None) or ''
+        hospital_name = ''
+        if entry.hospital:
+            hospital_name = getattr(entry.hospital, 'hospital_name', None) or \
+                            getattr(entry.hospital, 'name', None) or ''
+
         return jsonify({
             'id': entry.id,
             'entry_no': entry.entry_no,
             'entry_date': entry.entry_date.isoformat(),
             'doctor_id': entry.doctor_id,
-            'doctor_name': entry.doctor.doctor_name if entry.doctor else '', # <--- FIXED
+            'doctor_name': doctor_name,
             'hospital_id': entry.hospital_id,
-            'hospital_name': entry.hospital.hospital_name if entry.hospital else '', # <--- FIXED
+            'hospital_name': hospital_name,
             'patient_name': entry.patient_name,
             'description': entry.description,
             'no_of_units': entry.no_of_units,
             'shade_type': entry.shade_type,
             'work_type': entry.work_type,
-            'amount': float(entry.amount)
+            'amount': float(entry.amount or 0)
         })
     except Exception as e:
+        import traceback
+        error_msg = traceback.format_exc()
+        logging.error(error_msg)
         return jsonify({'error': str(e)}), 500
 
-# ---------- PUT: Update entry ----------
 @entry_bp.route('/<int:entry_id>', methods=['PUT'])
 @token_required
 def update_entry_by_id(entry_id):
@@ -134,9 +170,11 @@ def update_entry_by_id(entry_id):
     except ValueError as ve:
         return jsonify({'error': str(ve)}), 400
     except Exception as e:
+        import traceback
+        error_msg = traceback.format_exc()
+        logging.error(error_msg)
         return jsonify({'error': str(e)}), 500
 
-# ---------- DELETE: Delete entry ----------
 @entry_bp.route('/<int:entry_id>', methods=['DELETE'])
 @token_required
 def delete_entry_by_id(entry_id):
@@ -144,4 +182,7 @@ def delete_entry_by_id(entry_id):
         delete_entry(entry_id)
         return jsonify({'message': 'Entry deleted'})
     except Exception as e:
+        import traceback
+        error_msg = traceback.format_exc()
+        logging.error(error_msg)
         return jsonify({'error': str(e)}), 500

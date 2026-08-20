@@ -74,7 +74,7 @@ const Doctors = () => {
       const payload = { ...form, hospital_ids: finalHospitalIds };
 
       if (editing) {
-        await api.put(`/api/doctors/${editing}`, payload);
+        await api.put(`/doctors/${editing}`, payload);
       } else {
         await api.post('/doctors', payload);
       }
@@ -104,7 +104,7 @@ const Doctors = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm('Delete this doctor?')) {
-      await api.delete(`/api/doctors/${id}`);
+      await api.delete(`/doctors/${id}`);
       fetchDoctors();
     }
   };
@@ -277,4 +277,5 @@ const Doctors = () => {
 };
 
 export default Doctors;
+
 

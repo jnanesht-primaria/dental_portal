@@ -32,7 +32,7 @@ const Hospitals = () => {
     e.preventDefault();
     try {
       if (editing) {
-        await api.put(`/api/hospitals/${editing}`, form);
+        await api.put(`/hospitals/${editing}`, form);
       } else {
         await api.post('/hospitals', form);
       }
@@ -51,7 +51,7 @@ const Hospitals = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm('Delete this hospital?')) {
-      await api.delete(`/api/hospitals/${id}`);
+      await api.delete(`/hospitals/${id}`);
       fetchHospitals();
     }
   };
@@ -188,4 +188,5 @@ const Hospitals = () => {
 };
 
 export default Hospitals;
+
 

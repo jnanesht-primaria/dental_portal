@@ -133,7 +133,7 @@ const AddEntry = () => {
 
     try {
       if (editingEntryId) {
-        await api.put(`/api/entries/${editingEntryId}`, payload);
+        await api.put(`/entries/${editingEntryId}`, payload);
         alert('Entry updated!');
       } else {
         await api.post('/entries', payload);
@@ -342,4 +342,5 @@ const AddEntry = () => {
 };
 
 export default AddEntry;
+
 
