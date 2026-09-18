@@ -412,3 +412,250 @@
     grid-template-columns: 1fr;
   }
 }
+/* ===== Entries filter bar ===== */
+.entries-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  background: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid #e8e3d6;
+  margin: 16px 0 20px;
+}
+
+.entries-filters .search-section {
+  flex: 1 1 260px;
+  max-width: 360px;
+  margin: 0;
+}
+
+.entries-filters .filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2b2b28;
+  flex: 0 1 180px;
+}
+
+.entries-filters .filter-field input {
+  padding: 10px 12px;
+  border: 1.5px solid #d8d3c7;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+}
+.entries-filters .filter-field input:focus {
+  outline: none;
+  border-color: #1f3a3d;
+  box-shadow: 0 0 0 3px rgba(31, 58, 61, 0.1);
+}
+
+.clear-filters-btn {
+  padding: 10px 20px;
+  background: #e8e3d6;
+  color: #2b2b28;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.clear-filters-btn:hover {
+  background: #d8d3c7;
+}
+
+/* ===== Entries header ===== */
+.entries-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+.entries-header h3 {
+  margin: 0;
+}
+.entries-count {
+  font-size: 13px;
+  color: #7a7a72;
+  font-weight: 500;
+}
+
+/* ===== Pagination ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e8e3d6;
+  border-radius: 8px;
+}
+
+.pagination button {
+  padding: 8px 14px;
+  background: #e8e3d6;
+  color: #2b2b28;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.pagination button:hover:not(:disabled) {
+  background: #1f3a3d;
+  color: white;
+}
+
+.pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pagination .page-info {
+  margin: 0 8px;
+  font-size: 14px;
+  color: #1f3a3d;
+}
+.pagination .page-info strong {
+  font-weight: 700;
+}
+
+/* Print: hide filters + pagination */
+@media print {
+  .entries-filters,
+  .pagination,
+  .clear-filters-btn {
+    display: none !important;
+  }
+}/* ===== Entries filter bar ===== */
+.entries-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  background: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid #e8e3d6;
+  margin: 16px 0 20px;
+}
+
+.entries-filters .search-section {
+  flex: 1 1 260px;
+  max-width: 360px;
+  margin: 0;
+}
+
+.entries-filters .filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2b2b28;
+  flex: 0 1 180px;
+}
+
+.entries-filters .filter-field input {
+  padding: 10px 12px;
+  border: 1.5px solid #d8d3c7;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+}
+.entries-filters .filter-field input:focus {
+  outline: none;
+  border-color: #1f3a3d;
+  box-shadow: 0 0 0 3px rgba(31, 58, 61, 0.1);
+}
+
+.clear-filters-btn {
+  padding: 10px 20px;
+  background: #e8e3d6;
+  color: #2b2b28;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.clear-filters-btn:hover {
+  background: #d8d3c7;
+}
+
+/* ===== Entries header ===== */
+.entries-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+.entries-header h3 {
+  margin: 0;
+}
+.entries-count {
+  font-size: 13px;
+  color: #7a7a72;
+  font-weight: 500;
+}
+
+/* ===== Pagination ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e8e3d6;
+  border-radius: 8px;
+}
+
+.pagination button {
+  padding: 8px 14px;
+  background: #e8e3d6;
+  color: #2b2b28;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.pagination button:hover:not(:disabled) {
+  background: #1f3a3d;
+  color: white;
+}
+
+.pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pagination .page-info {
+  margin: 0 8px;
+  font-size: 14px;
+  color: #1f3a3d;
+}
+.pagination .page-info strong {
+  font-weight: 700;
+}
+
+/* Print: hide filters + pagination */
+@media print {
+  .entries-filters,
+  .pagination,
+  .clear-filters-btn {
+    display: none !important;
+  }
+}

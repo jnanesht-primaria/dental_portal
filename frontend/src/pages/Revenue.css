@@ -421,3 +421,244 @@
     page-break-inside: avoid;
   }
 }
+/* ===== Pay Balance Section ===== */
+.pay-balance-section {
+  background: white;
+  border: 1px solid #e8e3d6;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.pay-balance-section h3 {
+  margin: 0 0 12px 0;
+  color: #1f3a3d;
+  font-size: 18px;
+}
+.pay-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2b2b28;
+  max-width: 260px;
+  margin-bottom: 12px;
+}
+.pay-form input {
+  padding: 10px 12px;
+  border: 1.5px solid #d8d3c7;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.pay-form input:focus {
+  outline: none;
+  border-color: #1f3a3d;
+  box-shadow: 0 0 0 3px rgba(31, 58, 61, 0.1);
+}
+.pay-form-actions {
+  display: flex;
+  gap: 10px;
+}
+.pay-primary {
+  padding: 10px 22px;
+  background: #1f3a3d;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pay-primary:hover {
+  background: #16292b;
+}
+.pay-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.pay-secondary {
+  padding: 10px 22px;
+  background: #e8e3d6;
+  color: #2b2b28;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pay-secondary:hover {
+  background: #d8d3c7;
+}
+.pay-error {
+  color: #a0402a;
+  font-weight: 600;
+  margin-top: 12px;
+}
+.pay-success {
+  color: #2b6b3a;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+/* Pay button inside table row */
+.pay-row-btn {
+  padding: 4px 12px;
+  background: #1f3a3d;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pay-row-btn:hover {
+  background: #16292b;
+}
+
+/* Hide the pay column when printing */
+@media print {
+  .no-print,
+  .pay-balance-section,
+  .pay-row-btn {
+    display: none !important;
+  }
+}
+
+/* ===== Carry / Previous Balance section ===== */
+.carry-section {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-top: 2px solid #1f3a3d;
+  background: #faf9f6;
+  border-radius: 0 0 8px 8px;
+}
+
+.carry-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.carry-row label,
+.carry-row > span:first-child {
+  font-weight: 600;
+  color: #1f3a3d;
+  min-width: 200px;
+}
+
+.carry-input {
+  padding: 8px 12px;
+  border: 1.5px solid #d8d3c7;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 180px;
+  text-align: right;
+}
+.carry-input:focus {
+  outline: none;
+  border-color: #1f3a3d;
+  box-shadow: 0 0 0 3px rgba(31, 58, 61, 0.1);
+}
+
+.carry-hint {
+  font-size: 12px;
+  color: #7a7a72;
+}
+.carry-hint.ok { color: #2b6b3a; font-weight: 600; }
+.carry-hint.err { color: #a0402a; font-weight: 600; }
+
+.remaining-row {
+  border-top: 1px dashed #d8d3c7;
+  margin-top: 4px;
+  padding-top: 12px;
+}
+
+.remaining-amount {
+  font-size: 20px;
+  color: #1f3a3d;
+  font-weight: 700;
+}
+
+/* Print: keep the carry section visible */
+@media print {
+  .carry-section {
+    background: white !important;
+    border-top: 2px solid #1f3a3d !important;
+  }
+  .carry-input {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    width: auto !important;
+    font-weight: 700 !important;
+    text-align: left !important;
+  }
+}
+/* Badges for balance status */
+.carry-hint.manual {
+  color: #1f3a3d;
+  background: #e8e3d6;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 12px;
+}
+.carry-hint.auto {
+  color: #2b6b3a;
+  background: #e3efe5;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Auto-carry info banner */
+.auto-carry-note {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #eef4f1;
+  border-left: 4px solid #2b6b3a;
+  color: #1f3a3d;
+  font-size: 13px;
+  border-radius: 6px;
+}
+.auto-carry-note strong {
+  color: #1f3a3d;
+}
+
+/* Print: hide badges and info */
+@media print {
+  .carry-hint,
+  .auto-carry-note {
+    display: none !important;
+  }
+}
+
+/* Auto-carry banner variants */
+.auto-carry-note.completed {
+  background: #e3efe5;
+  border-left-color: #2b6b3a;
+  color: #1f3a3d;
+}
+.auto-carry-note.skipped {
+  background: #fbf5e5;
+  border-left-color: #a07820;
+  color: #6b5522;
+}
+
+/* Total Due row */
+.total-due-amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f3a3d;
+}
+.carry-subtext {
+  font-size: 12px;
+  color: #7a7a72;
+  font-style: italic;
+}
+
+/* Remaining amount — colour flips to green when settled */
+.remaining-amount.settled {
+  color: #2b6b3a;
+}
