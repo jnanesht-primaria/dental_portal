@@ -1,0 +1,287 @@
+/* ===== Dashboard Styles ===== */
+.dashboard {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 8px;
+}
+
+/* ---- Header ---- */
+.dashboard-header {
+  margin-bottom: 20px;
+}
+.dashboard-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f3a3d;
+  margin: 0;
+}
+.dashboard-header .subtitle {
+  font-size: 14px;
+  color: #8a8577;
+  margin-top: 2px;
+}
+
+/* ---- Stats Grid ---- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  border: 1px solid #edeae0;
+  border-left: 4px solid #1f3a3d;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.2s;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.stat-card .icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.stat-card .icon svg {
+  width: 20px;
+  height: 20px;
+}
+.stat-card .content {
+  flex: 1;
+  min-width: 0;
+}
+.stat-card .title {
+  font-size: 10px;
+  font-weight: 500;
+  color: #8a8577;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 1px;
+  white-space: nowrap;
+}
+.stat-card .value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f3a3d;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Charts ---- */
+.charts-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.chart-box {
+  background: white;
+  border-radius: 14px;
+  padding: 14px 12px 10px;
+  border: 1px solid #edeae0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.chart-box h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f3a3d;
+  margin: 0 0 6px 0;
+}
+
+/* ---- Top Lists ---- */
+.top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.top-grid .chart-box {
+  padding: 14px 16px 10px;
+}
+.top-grid .chart-box h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f3a3d;
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.top-grid .chart-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.top-grid .chart-box ul li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f0ede5;
+  font-size: 13px;
+  color: #2b2b28;
+}
+.top-grid .chart-box ul li:last-child {
+  border-bottom: none;
+}
+.top-grid .chart-box ul li .rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #f1f0ec;
+  font-weight: 600;
+  font-size: 10px;
+  color: #5b5b54;
+  flex-shrink: 0;
+}
+.top-grid .chart-box ul li .name {
+  flex: 1;
+  font-weight: 500;
+}
+.top-grid .chart-box ul li .amount {
+  font-weight: 600;
+  color: #1f3a3d;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.top-grid .chart-box ul li.empty {
+  justify-content: center;
+  color: #b8b2a2;
+  padding: 10px 0;
+  border: none;
+  font-size: 13px;
+}
+
+/* ---- Quick Actions ---- */
+.quick-actions {
+  margin: 20px 0 24px;
+}
+.quick-actions h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f3a3d;
+  margin-bottom: 10px;
+}
+.action-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.action-btn:hover {
+  transform: scale(1.03);
+  opacity: 0.9;
+}
+.action-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ======================================== */
+/*          MOBILE RESPONSIVE               */
+/* ======================================== */
+
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (max-width: 992px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 768px) {
+  /* --- Existing Sidebar logic (Keep this if your layout has these classes) --- */
+  .layout-container {
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+  aside.sidebar {
+    position: fixed; top: 0; left: 0; width: 280px; height: 100vh; z-index: 999;
+    transform: translateX(-100%); transition: transform 0.3s ease-in-out;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  }
+  aside.sidebar.open { transform: translateX(0); }
+  .main-area { margin-left: 0 !important; width: 100%; padding: 0; }
+  .navbar, .dashboard-header {
+    width: 100%; display: flex; justify-content: space-between; align-items: center;
+    padding: 0 16px 16px 16px; box-sizing: border-box;
+  }
+  .navbar { height: 60px; padding: 0 16px; }
+
+  /* --- NEW: Dashboard Internal Mobile Tweaks --- */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important; /* 2 columns for mobile */
+    gap: 8px;
+  }
+  .stat-card {
+    padding: 10px 12px;
+  }
+  .stat-card .value {
+    font-size: 14px; /* Slightly smaller for 430px width */
+  }
+  .stat-card .title {
+    font-size: 9px;
+  }
+
+  .charts-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .chart-box {
+    padding: 12px;
+  }
+  .chart-box h3 {
+    font-size: 13px;
+  }
+
+  .top-grid {
+    grid-template-columns: 1fr; /* Stack top lists vertically */
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Buttons in a 2x grid */
+    gap: 10px;
+  }
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 0;
+    font-size: 12px;
+  }
+}
