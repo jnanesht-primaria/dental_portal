@@ -659,3 +659,67 @@
     display: none !important;
   }
 }
+
+/* Entry-date block: pill toggle + input */
+.entry-date-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.entry-type-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.type-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  cursor: pointer;
+  background: #fff;
+  color: #555;
+  font-size: 14px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.type-pill input[type="radio"] {
+  accent-color: #1F3A3D;
+  margin: 0;
+  cursor: pointer;
+}
+
+.type-pill.active {
+  background: #1F3A3D;
+  border-color: #1F3A3D;
+  color: #fff;
+}
+
+.type-pill.active input[type="radio"] {
+  accent-color: #fff;
+}
+
+/* Small badge in the table */
+.type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.type-badge.date {
+  background: #e8e3d6;
+  color: #1F3A3D;
+}
+
+.type-badge.month {
+  background: #1F3A3D;
+  color: #fff;
+}

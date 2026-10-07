@@ -1,3 +1,4 @@
+# backend/routes/entries.py
 from flask import Blueprint, request, jsonify
 from services.entry_service import (
     create_entry, get_entries, get_entry, update_entry, delete_entry,
@@ -28,6 +29,38 @@ def _parse_entry_date(data):
             data['entry_date'] = datetime.strptime(data['entry_date'], '%Y-%m-%d').date()
         except ValueError:
             raise ValueError('Invalid date format, use YYYY-MM-DD')
+
+
+def _apply_entry_type_and_month(data):
+    """
+    Normalise entry_type / entry_month / entry_date before handing off
+    to the service layer.
+
+    Rules:
+      - entry_type must be 'date' or 'month'
+      - for 'month', entry_month must be 'YYYY-MM' and we
+        auto-set entry_date to the 1st of that month
+      - for 'date', entry_month is dropped
+    """
+    entry_type = data.get('entry_type', 'date') or 'date'
+    if entry_type not in ('date', 'month'):
+        entry_type = 'date'
+    data['entry_type'] = entry_type
+
+    if entry_type == 'month':
+        em = data.get('entry_month')
+        if not em or len(str(em)) != 7:
+            raise ValueError("entry_month must be 'YYYY-MM'")
+        em = str(em)
+        data['entry_month'] = em
+        # Force the date column to the 1st of the month.
+        try:
+            y, m = em.split('-')
+            data['entry_date'] = f"{int(y):04d}-{int(m):02d}-01"
+        except (ValueError, TypeError):
+            raise ValueError("entry_month must be 'YYYY-MM'")
+    else:
+        data.pop('entry_month', None)
 
 
 def _recompute_amounts(data):
@@ -105,18 +138,7 @@ def add_entry():
         if not data:
             return jsonify({'error': 'No data provided'}), 400
 
-        entry_type = data.get('entry_type', 'date')
-        if entry_type not in ('date', 'month'):
-            entry_type = 'date'
-        data['entry_type'] = entry_type
-
-        if entry_type == 'month':
-            em = data.get('entry_month')
-            if not em or len(em) != 7:
-                return jsonify({'error': "entry_month must be 'YYYY-MM'"}), 400
-        else:
-            data.pop('entry_month', None)
-
+        _apply_entry_type_and_month(data)
         _parse_entry_date(data)
         _recompute_amounts(data)
 
@@ -134,13 +156,6 @@ def add_entry():
 
 # ============================================================
 #  GET /api/entries
-#
-#  Supports two modes for backwards compatibility:
-#    - default: returns a plain array (used by Revenue etc.)
-#    - ?paginate=1: returns { items, pagination }
-#
-#  Filters: doctor_id, hospital_id, month, date_from, date_to,
-#           patient_name, work_type, entry_type, search
 # ============================================================
 @entry_bp.route('', methods=['GET'])
 @token_required
@@ -168,7 +183,6 @@ def list_entries():
         if 'entry_type' in request.args and request.args['entry_type'] in ('date', 'month'):
             filters['entry_type'] = request.args['entry_type']
 
-        # Free-text search across patient name / doctor name / entry_no
         if 'search' in request.args and request.args['search']:
             filters['search'] = request.args['search'].strip()
 
@@ -193,7 +207,7 @@ def list_entries():
                 },
             }), 200
 
-        # ---- Legacy mode: plain array (used by Revenue) ----
+        # ---- Legacy mode: plain array ----
         query = get_entries(filters)
         limit = request.args.get('limit', type=int)
         if limit:
@@ -230,6 +244,19 @@ def update_entry_by_id(entry_id):
         if not data:
             return jsonify({'error': 'No update data provided'}), 400
 
+        # If entry_type is being changed to 'month' (or was already
+        # 'month' and no entry_date was sent), auto-fill the date.
+        if data.get('entry_type') == 'month' or (
+            'entry_month' in data and data.get('entry_type') != 'date'
+        ):
+            em = data.get('entry_month')
+            if em and len(str(em)) == 7:
+                try:
+                    y, m = str(em).split('-')
+                    data['entry_date'] = f"{int(y):04d}-{int(m):02d}-01"
+                except (ValueError, TypeError):
+                    pass
+
         if 'entry_type' in data and data['entry_type'] not in ('date', 'month'):
             data['entry_type'] = 'date'
 
@@ -237,7 +264,7 @@ def update_entry_by_id(entry_id):
         _recompute_amounts(data)
 
         entry = update_entry(entry_id, data)
-        return jsonify({'message': 'Entry updated'})
+        return jsonify({'message': 'Entry updated', 'id': entry.id})
     except ValueError as ve:
         return jsonify({'error': str(ve)}), 400
     except Exception as e:

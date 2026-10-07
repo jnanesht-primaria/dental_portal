@@ -1,5 +1,5 @@
 # backend/app.py
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, request
 from flask_cors import CORS
 from config import Config
 from models import db
@@ -10,19 +10,52 @@ from routes.entries import entry_bp
 from routes.revenue import revenue_bp
 from routes.reports import report_bp
 from routes.dashboard import dashboard_bp
-from routes.balance_carry import balance_carry_bp   # ← NEW
+from routes.balance_carry import balance_carry_bp
 import os
+import logging
 
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    # ------------------------------------------------------------------
+    # Logging — INFO level so every request shows up in the terminal
+    # ------------------------------------------------------------------
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s [%(levelname)s] %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
+    app.logger.setLevel(logging.INFO)
+
+    # ------------------------------------------------------------------
+    # Request / response logging — fires for EVERY request that
+    # actually reaches Flask. If you don't see these lines when the
+    # frontend makes a call, the request is not getting here.
+    # ------------------------------------------------------------------
+    @app.before_request
+    def _log_incoming():
+        qs = f'?{request.query_string.decode()}' if request.query_string else ''
+        app.logger.info(
+            f'>> {request.method} {request.path}{qs}  from {request.remote_addr}'
+        )
+
+    @app.after_request
+    def _log_outgoing(response):
+        app.logger.info(
+            f'<< {request.method} {request.path}  ->  {response.status_code}'
+        )
+        return response
+
     app.url_map.strict_slashes = False
     CORS(app)
 
     db.init_app(app)
 
+    # ------------------------------------------------------------------
+    # Blueprints
+    # ------------------------------------------------------------------
     app.register_blueprint(auth_bp, strict_slashes=False)
     app.register_blueprint(doctor_bp, strict_slashes=False)
     app.register_blueprint(hospital_bp, strict_slashes=False)
@@ -30,7 +63,20 @@ def create_app():
     app.register_blueprint(revenue_bp, strict_slashes=False)
     app.register_blueprint(report_bp, strict_slashes=False)
     app.register_blueprint(dashboard_bp, strict_slashes=False)
-    app.register_blueprint(balance_carry_bp, strict_slashes=False)   # ← NEW
+    app.register_blueprint(balance_carry_bp, strict_slashes=False)
+
+    # ------------------------------------------------------------------
+    # Print every registered route at startup. Confirm that
+    #   POST  /api/hospitals
+    # exists before worrying about anything else.
+    # ------------------------------------------------------------------
+    print('\n=== Registered routes ===')
+    for rule in sorted(app.url_map.iter_rules(), key=lambda r: str(r)):
+        methods = ','.join(
+            sorted(m for m in rule.methods if m not in ('HEAD', 'OPTIONS'))
+        )
+        print(f'  {methods:22s} {rule}')
+    print('=========================\n')
 
     with app.app_context():
         db.create_all()
@@ -49,4 +95,7 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # use_reloader=False avoids double-printing logs and makes it
+    # easier to see what's happening. Flip back to True if you want
+    # hot reload while editing backend code.
+    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)

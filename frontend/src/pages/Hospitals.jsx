@@ -1,5 +1,7 @@
+// frontend/src/pages/Hospitals.jsx
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { toArray, errMsg } from '../utils/normalize';
 import './Hospitals.css';
 
 const Hospitals = () => {
@@ -7,12 +9,13 @@ const Hospitals = () => {
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState(null);
   const [form, setForm] = useState({
     hospital_name: '',
     contact_person: '',
     phone: '',
     address: '',
-    status: 'Active'
+    status: 'Active',
   });
 
   useEffect(() => {
@@ -22,9 +25,11 @@ const Hospitals = () => {
   const fetchHospitals = async () => {
     try {
       const res = await api.get('/hospitals');
-      setHospitals(res.data);
+      setHospitals(toArray(res.data, 'hospitals'));
     } catch (err) {
       console.error(err);
+      setHospitals([]);
+      setError(errMsg(err, 'Failed to load hospitals'));
     }
   };
 
@@ -39,7 +44,7 @@ const Hospitals = () => {
       resetForm();
       fetchHospitals();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error saving hospital');
+      alert(errMsg(err, 'Error saving hospital'));
     }
   };
 
@@ -51,8 +56,12 @@ const Hospitals = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm('Delete this hospital?')) {
-      await api.delete(`/hospitals/${id}`);
-      fetchHospitals();
+      try {
+        await api.delete(`/hospitals/${id}`);
+        fetchHospitals();
+      } catch (err) {
+        alert(errMsg(err, 'Failed to delete hospital'));
+      }
     }
   };
 
@@ -62,13 +71,13 @@ const Hospitals = () => {
     setShowForm(true);
   };
 
-  // Filter hospitals based on search term
-  const filteredHospitals = hospitals.filter(h => {
+  // Defensive: hospitals is guaranteed an array.
+  const filteredHospitals = hospitals.filter((h) => {
     const term = searchTerm.toLowerCase();
     return (
-      h.hospital_name.toLowerCase().includes(term) ||
+      (h.hospital_name || '').toLowerCase().includes(term) ||
       (h.contact_person && h.contact_person.toLowerCase().includes(term)) ||
-      h.phone.includes(term)
+      String(h.phone || '').includes(term)
     );
   });
 
@@ -76,7 +85,12 @@ const Hospitals = () => {
     <div className="page">
       <h2>Manage Hospitals</h2>
 
-      {/* Add Hospital Button */}
+      {error && (
+        <p className="error-message" style={{ color: '#a0402a', marginTop: 12 }}>
+          Error: {error}
+        </p>
+      )}
+
       <button
         className="add-doctor-btn"
         onClick={() => {
@@ -88,42 +102,26 @@ const Hospitals = () => {
         + Add Hospital
       </button>
 
-      {/* Hospital Form */}
       {(showForm || editing) && (
         <form onSubmit={handleSubmit} className="vertical-form">
           <div className="form-header">
             <h3>{editing ? 'Edit Hospital' : 'Add New Hospital'}</h3>
             <button type="button" className="close-btn" onClick={resetForm} aria-label="Close form">×</button>
           </div>
-          <input
-            type="text"
-            placeholder="Hospital Name *"
+          <input type="text" placeholder="Hospital Name *"
             value={form.hospital_name}
-            onChange={(e) => setForm({ ...form, hospital_name: e.target.value })}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Contact Person"
+            onChange={(e) => setForm({ ...form, hospital_name: e.target.value })} required />
+          <input type="text" placeholder="Contact Person"
             value={form.contact_person}
-            onChange={(e) => setForm({ ...form, contact_person: e.target.value })}
-          />
-          <input
-            type="text"
-            placeholder="Phone"
+            onChange={(e) => setForm({ ...form, contact_person: e.target.value })} />
+          <input type="text" placeholder="Phone"
             value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          />
-          <input
-            type="text"
-            placeholder="Address"
+            onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+          <input type="text" placeholder="Address"
             value={form.address}
-            onChange={(e) => setForm({ ...form, address: e.target.value })}
-          />
-          <select
-            value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value })}
-          >
+            onChange={(e) => setForm({ ...form, address: e.target.value })} />
+          <select value={form.status}
+            onChange={(e) => setForm({ ...form, status: e.target.value })}>
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
           </select>
@@ -135,7 +133,6 @@ const Hospitals = () => {
         </form>
       )}
 
-      {/* Search Bar */}
       <div className="search-section">
         <input
           type="text"
@@ -149,15 +146,10 @@ const Hospitals = () => {
         )}
       </div>
 
-      {/* Hospitals Table */}
       <table className="data-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Contact</th>
-            <th>Phone</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <th>Name</th><th>Contact</th><th>Phone</th><th>Status</th><th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -176,7 +168,7 @@ const Hospitals = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="5" style={{ textAlign: 'center', padding: '30px', color: '#8a8577' }}>
+              <td colSpan="5" style={{ textAlign: 'center', padding: 30, color: '#8a8577' }}>
                 {searchTerm ? 'No hospitals match your search.' : 'No hospitals registered yet.'}
               </td>
             </tr>
@@ -188,5 +180,3 @@ const Hospitals = () => {
 };
 
 export default Hospitals;
-
-

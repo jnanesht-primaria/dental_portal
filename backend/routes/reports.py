@@ -6,7 +6,6 @@ import calendar
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
-from sqlalchemy import or_, and_
 
 from models import db, DentalEntry, Doctor, Hospital, BalanceCarry
 from utils.jwt_utils import token_required
@@ -48,11 +47,11 @@ def export_excel():
         query = DentalEntry.query.filter(DentalEntry.doctor_id == int(doctor_id))
         if hospital_id:
             query = query.filter(DentalEntry.hospital_id == int(hospital_id))
-
         query = query.filter(DentalEntry.entry_type == 'date')
 
         period_text = ''
         filename_suffix = ''
+        month_key = None   # 'YYYY-MM' — used to look up BalanceCarry
 
         if month:
             try:
@@ -70,6 +69,7 @@ def export_excel():
             )
             period_text = first_day.strftime('%B %Y')
             filename_suffix = str(month)
+            month_key = str(month)
 
         else:
             try:
@@ -82,6 +82,12 @@ def export_excel():
             query = query.filter(db.func.date(DentalEntry.entry_date) <= date_to_obj)
             period_text = f'{date_from} to {date_to}'
             filename_suffix = f'{date_from}_to_{date_to}'
+
+            # If the whole range falls inside a single calendar month,
+            # we can still use it for BalanceCarry lookups.
+            if (date_from_obj.year == date_to_obj.year and
+                    date_from_obj.month == date_to_obj.month):
+                month_key = f'{date_from_obj.year:04d}-{date_from_obj.month:02d}'
 
         query = query.order_by(DentalEntry.entry_date.desc())
         entries = query.all()
@@ -96,10 +102,13 @@ def export_excel():
             if hospital:
                 hospital_name = hospital.hospital_name
 
-        # ---- Fetch previous balance for the "Remaining" calc ----
+        # ---- Fetch balance carry for the "Remaining" calc ----
         prev_balance = 0.0
-        if month:
-            q = BalanceCarry.query.filter_by(doctor_id=int(doctor_id), month=str(month))
+        paid_balance = 0.0
+        if month_key:
+            q = BalanceCarry.query.filter_by(
+                doctor_id=int(doctor_id), month=month_key
+            )
             if hospital_id:
                 q = q.filter_by(hospital_id=int(hospital_id))
             else:
@@ -107,6 +116,7 @@ def export_excel():
             row = q.first()
             if row:
                 prev_balance = float(row.previous_balance or 0)
+                paid_balance = float(row.paid_amount or 0)
 
         # ---- Build workbook ----
         wb = Workbook()
@@ -200,13 +210,24 @@ def export_excel():
             elif col_idx == 6:
                 c.alignment = right
 
-        # Carry / Remaining rows
+        # ---- Carry / Remaining rows (matches auto_carry_forward math) ----
         row += 2
         ws.cell(row=row, column=6, value='Previous Balance (₹):').font = Font(bold=True)
         ws.cell(row=row, column=7, value=prev_balance).number_format = '₹#,##0.00'
 
         row += 1
-        remaining = total_amount - prev_balance
+        total_due = total_amount + prev_balance
+        ws.cell(row=row, column=6, value='Total Due (₹):').font = Font(bold=True)
+        ws.cell(row=row, column=7, value=total_due).number_format = '₹#,##0.00'
+
+        row += 1
+        ws.cell(row=row, column=6, value='Paid Amount (₹):').font = Font(bold=True)
+        ws.cell(row=row, column=7, value=paid_balance).number_format = '₹#,##0.00'
+
+        row += 1
+        remaining = total_due - paid_balance
+        if remaining < 0:
+            remaining = 0.0
         ws.cell(row=row, column=6, value='Remaining Amount (₹):').font = Font(bold=True)
         ws.cell(row=row, column=7, value=remaining).number_format = '₹#,##0.00'
         ws.cell(row=row, column=7).font = Font(bold=True)

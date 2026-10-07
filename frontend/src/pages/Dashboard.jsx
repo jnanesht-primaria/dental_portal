@@ -1,3 +1,4 @@
+// frontend/src/pages/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -13,31 +14,91 @@ import {
 
 const COLORS = ['#1F3A3D', '#E8B87A', '#5F8B8F', '#B0774A', '#8A8577'];
 
+// ---------------------------------------------------------
+// Safe defaults — used whenever the API response is missing
+// a key (prevents "Cannot read properties of undefined").
+// ---------------------------------------------------------
+const EMPTY_STATS = {
+  total_doctors: 0,
+  total_hospitals: 0,
+  today_cases: 0,
+  monthly_cases: 0,
+  total_revenue: 0,
+  monthly_revenue: 0,
+  top_doctors: [],
+  top_hospitals: [],
+  work_type_distribution: [],
+  monthly_trend: [],
+};
+
+// Merge whatever the API sent on top of defaults, and force
+// array-typed keys to always be arrays.
+const normalizeStats = (raw) => {
+  const merged = { ...EMPTY_STATS, ...(raw || {}) };
+  ['top_doctors', 'top_hospitals', 'work_type_distribution', 'monthly_trend']
+    .forEach((k) => {
+      if (!Array.isArray(merged[k])) merged[k] = [];
+    });
+  ['total_doctors','total_hospitals','today_cases','monthly_cases']
+    .forEach((k) => {
+      if (typeof merged[k] !== 'number') merged[k] = Number(merged[k]) || 0;
+    });
+  ['total_revenue','monthly_revenue'].forEach((k) => {
+    if (typeof merged[k] !== 'number') merged[k] = Number(merged[k]) || 0;
+  });
+  return merged;
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchStats = async () => {
       try {
         const res = await api.get('/dashboard/stats');
-        setStats(res.data);
+        if (!cancelled) {
+          setStats(normalizeStats(res.data));
+          setError(null);
+        }
       } catch (err) {
-        console.error(err);
+        console.error('Dashboard stats failed:', err);
+        if (!cancelled) {
+          setError(
+            err.response?.data?.error ||
+            err.message ||
+            'Could not load stats'
+          );
+          setStats(EMPTY_STATS);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
+
     fetchStats();
+    return () => { cancelled = true; };
   }, []);
 
   if (loading) return <div className="loading">Loading dashboard...</div>;
-  if (!stats) return <div className="error">Could not load stats</div>;
 
-  const trendData = stats.monthly_trend.map(item => ({
+  if (error) {
+    return (
+      <div className="error">
+        Could not load stats: {String(error)}
+      </div>
+    );
+  }
+
+  // Safe: stats.monthly_trend is guaranteed to be an array now.
+  const trendData = stats.monthly_trend.map((item) => ({
     ...item,
-    month: item.month.toString().padStart(2, '0')
+    month: String(item?.month ?? '').padStart(2, '0'),
+    revenue: Number(item?.revenue ?? 0),
   }));
 
   return (
@@ -47,12 +108,12 @@ const Dashboard = () => {
         <p className="subtitle">Real‑time overview of your dental laboratory</p>
       </div>
 
-      {/* Stats Cards – only real data */}
+      {/* Stats Cards */}
       <div className="stats-grid">
         <StatCard icon={<Users size={22} />} title="Total Doctors" value={stats.total_doctors} color="#1F3A3D" />
         <StatCard icon={<Hospital size={22} />} title="Total Hospitals" value={stats.total_hospitals} color="#5F8B8F" />
         <StatCard icon={<Calendar size={22} />} title="Today's Cases" value={stats.today_cases} color="#E8B87A" />
-        <StatCard icon={<DollarSign size={22} />} title="Monthly Revenue" value={`₹${stats.monthly_revenue.toFixed(2)}`} color="#B0774A" />
+        <StatCard icon={<DollarSign size={22} />} title="Monthly Revenue" value={`₹${Number(stats.monthly_revenue).toFixed(2)}`} color="#B0774A" />
       </div>
 
       {/* Charts */}
@@ -70,7 +131,7 @@ const Dashboard = () => {
               <CartesianGrid strokeDasharray="3 3" stroke="#e8e3d6" />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} tickFormatter={(value) => `₹${value}`} />
-              <Tooltip formatter={(value) => [`₹${value.toFixed(2)}`, 'Revenue']} />
+              <Tooltip formatter={(value) => [`₹${Number(value).toFixed(2)}`, 'Revenue']} />
               <Legend />
               <Area type="monotone" dataKey="revenue" stroke="#1F3A3D" fill="url(#revenueGradient)" strokeWidth={2} />
             </AreaChart>
@@ -112,7 +173,7 @@ const Dashboard = () => {
                 <li key={i}>
                   <span className="rank">{i + 1}</span>
                   <span className="name">{d.name}</span>
-                  <span className="amount">₹{d.revenue.toFixed(2)}</span>
+                  <span className="amount">₹{Number(d.revenue || 0).toFixed(2)}</span>
                 </li>
               ))
             ) : (
@@ -128,7 +189,7 @@ const Dashboard = () => {
                 <li key={i}>
                   <span className="rank">{i + 1}</span>
                   <span className="name">{h.name}</span>
-                  <span className="amount">₹{h.revenue.toFixed(2)}</span>
+                  <span className="amount">₹{Number(h.revenue || 0).toFixed(2)}</span>
                 </li>
               ))
             ) : (
@@ -171,5 +232,3 @@ const ActionButton = ({ icon, label, onClick, color }) => (
 );
 
 export default Dashboard;
-
-

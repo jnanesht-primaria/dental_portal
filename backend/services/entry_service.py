@@ -1,3 +1,4 @@
+# backend/services/entry_service.py
 from models import db, DentalEntry, Doctor, Hospital
 from datetime import datetime, date
 from sqlalchemy import func, or_, and_
@@ -10,6 +11,36 @@ def generate_entry_no():
     today = datetime.utcnow().strftime('%y%m%d')
     suffix = secrets.token_hex(3)
     return f"ENTRY-{today}-{suffix}"
+
+
+def _coerce_entry_date(data, entry_type, entry_month):
+    """
+    Return a date to store in DentalEntry.entry_date.
+
+    For entry_type == 'month', force the date to the 1st of that
+    month (ignores any value the caller sent, so the month view in
+    the UI is always consistent).
+
+    For entry_type == 'date', use the caller's date, or today.
+    """
+    if entry_type == 'month' and entry_month:
+        try:
+            y, m = map(int, str(entry_month).split('-'))
+            return date(y, m, 1)
+        except (ValueError, TypeError):
+            pass
+
+    raw = data.get('entry_date')
+    if isinstance(raw, date):
+        return raw
+    if isinstance(raw, datetime):
+        return raw.date()
+    if isinstance(raw, str) and raw:
+        try:
+            return datetime.strptime(raw, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+    return datetime.utcnow().date()
 
 
 def create_entry(data, user_id):
@@ -30,7 +61,6 @@ def create_entry(data, user_id):
 
     if not (isinstance(amount, (int, float)) and amount > 0):
         raise ValueError("Amount must be a positive number")
-
     if paid_amount < 0:
         raise ValueError("Paid amount cannot be negative")
     if paid_amount > amount:
@@ -61,13 +91,15 @@ def create_entry(data, user_id):
             f"Hospital '{hospital.hospital_name}' is not linked to doctor '{doctor.doctor_name}'"
         )
 
+    entry_date = _coerce_entry_date(data, entry_type, entry_month)
+
     attempts = 3
     while attempts > 0:
         try:
             entry_no = generate_entry_no()
             entry = DentalEntry(
                 entry_no=entry_no,
-                entry_date=data.get('entry_date', datetime.utcnow().date()),
+                entry_date=entry_date,
                 entry_type=entry_type,
                 entry_month=entry_month,
                 doctor_id=doctor_id,
@@ -94,6 +126,8 @@ def create_entry(data, user_id):
             else:
                 raise ValueError(f"Database integrity error: {str(ie.orig)}")
     raise ValueError("Failed to generate a unique entry number after multiple attempts")
+
+
 def get_entries(filters=None):
     query = DentalEntry.query
     if filters:
@@ -131,7 +165,6 @@ def get_entries(filters=None):
         if 'work_type' in filters:
             query = query.filter_by(work_type=filters['work_type'])
 
-        # Free-text search: patient_name, entry_no, doctor_name (via join)
         if 'search' in filters and filters['search']:
             term = f"%{filters['search']}%"
             query = query.join(Doctor, DentalEntry.doctor_id == Doctor.id, isouter=True).filter(
@@ -143,6 +176,7 @@ def get_entries(filters=None):
             )
 
     return query.order_by(DentalEntry.entry_date.desc(), DentalEntry.id.desc())
+
 
 def get_entry(entry_id):
     return DentalEntry.query.get(entry_id)
@@ -163,6 +197,7 @@ def update_entry(entry_id, data):
     if new_paid > new_amount:
         raise ValueError("Paid amount cannot exceed the total amount")
 
+    # ---- entry_type / entry_month ----
     if 'entry_type' in data and data['entry_type'] is not None:
         et = data['entry_type']
         entry.entry_type = et if et in ('date', 'month') else 'date'
@@ -176,7 +211,29 @@ def update_entry(entry_id, data):
         else:
             entry.entry_month = None
 
-    skip_fields = ('paid_amount', 'balance_amount', 'amount', 'entry_type', 'entry_month')
+    # ---- entry_date: force to 1st of month when type == 'month' ----
+    if entry.entry_type == 'month' and entry.entry_month:
+        try:
+            y, m = map(int, str(entry.entry_month).split('-'))
+            entry.entry_date = date(y, m, 1)
+        except (ValueError, TypeError):
+            pass
+    elif 'entry_date' in data and data['entry_date'] is not None:
+        raw = data['entry_date']
+        if isinstance(raw, date) and not isinstance(raw, datetime):
+            entry.entry_date = raw
+        elif isinstance(raw, datetime):
+            entry.entry_date = raw.date()
+        elif isinstance(raw, str) and raw:
+            try:
+                entry.entry_date = datetime.strptime(raw, '%Y-%m-%d').date()
+            except ValueError:
+                raise ValueError('entry_date must be YYYY-MM-DD')
+
+    skip_fields = (
+        'paid_amount', 'balance_amount', 'amount',
+        'entry_type', 'entry_month', 'entry_date',
+    )
     for key, value in data.items():
         if key in skip_fields:
             continue
@@ -197,10 +254,6 @@ def delete_entry(entry_id):
     db.session.commit()
 
 
-# ============================================================
-#  apply_payment  →  REQUIRED by routes/entries.py
-#  Adds `amount` to paid_amount of one entry, recomputes balance.
-# ============================================================
 def apply_payment(entry_id, amount):
     if amount is None:
         raise ValueError("Payment amount is required")
@@ -236,11 +289,9 @@ def apply_payment(entry_id, amount):
 
     db.session.commit()
     return entry
+
+
 def get_entries_paginated(filters=None, page=1, per_page=25):
-    """
-    Returns a Flask-SQLAlchemy Pagination object using the same filters
-    as get_entries(). Ensures stable ordering by entry_date DESC, id DESC.
-    """
     query = get_entries(filters)
     page = max(int(page or 1), 1)
     per_page = int(per_page or 25)
