@@ -1999,3 +1999,46 @@
 2026-10-07 17:30:06,839 - INFO - 127.0.0.1 - - [07/Oct/2026 17:30:06] "GET /api/doctors?active_only=true HTTP/1.1" 200 -
 2026-10-07 17:30:06,858 - INFO - << GET /api/entries  ->  200
 2026-10-07 17:30:06,860 - INFO - 127.0.0.1 - - [07/Oct/2026 17:30:06] "GET /api/entries?limit=50 HTTP/1.1" 200 -
+2026-10-07 17:34:28,196 - INFO - >> GET /api/doctors?active_only=true  from 127.0.0.1
+2026-10-07 17:34:28,205 - INFO - >> GET /api/entries?limit=50  from 127.0.0.1
+2026-10-07 17:34:28,273 - INFO - << GET /api/doctors  ->  200
+2026-10-07 17:34:28,274 - INFO - 127.0.0.1 - - [07/Oct/2026 17:34:28] "GET /api/doctors?active_only=true HTTP/1.1" 200 -
+2026-10-07 17:34:28,285 - INFO - >> GET /api/doctors?active_only=true  from 127.0.0.1
+2026-10-07 17:34:28,287 - INFO - << GET /api/entries  ->  200
+2026-10-07 17:34:28,288 - INFO - 127.0.0.1 - - [07/Oct/2026 17:34:28] "GET /api/entries?limit=50 HTTP/1.1" 200 -
+2026-10-07 17:34:28,299 - INFO - >> GET /api/entries?limit=50  from 127.0.0.1
+2026-10-07 17:34:28,350 - INFO - << GET /api/doctors  ->  200
+2026-10-07 17:34:28,352 - INFO - 127.0.0.1 - - [07/Oct/2026 17:34:28] "GET /api/doctors?active_only=true HTTP/1.1" 200 -
+2026-10-07 17:34:28,367 - INFO - << GET /api/entries  ->  200
+2026-10-07 17:34:28,368 - INFO - 127.0.0.1 - - [07/Oct/2026 17:34:28] "GET /api/entries?limit=50 HTTP/1.1" 200 -
+2026-10-07 17:36:41,879 - INFO - Serving on http://0.0.0.0:5000
+2026-10-07 17:37:01,686 - INFO - >> GET /  from 127.0.0.1
+2026-10-07 17:37:01,751 - INFO - << GET /  ->  200
+2026-10-07 17:37:01,794 - INFO - >> GET /assets/index-DfoEnqh_.js  from 127.0.0.1
+2026-10-07 17:37:01,796 - INFO - >> GET /assets/index-D8kp6H2T.css  from 127.0.0.1
+2026-10-07 17:37:01,825 - INFO - << GET /assets/index-D8kp6H2T.css  ->  200
+2026-10-07 17:37:02,109 - INFO - << GET /assets/index-DfoEnqh_.js  ->  200
+2026-10-07 17:37:02,261 - INFO - >> GET /logo.jpeg  from 127.0.0.1
+2026-10-07 17:37:02,277 - INFO - >> GET /api/dashboard/stats  from 127.0.0.1
+2026-10-07 17:37:02,277 - INFO - << GET /logo.jpeg  ->  304
+2026-10-07 17:37:02,353 - INFO - << GET /api/dashboard/stats  ->  200
+2026-10-07 17:37:03,651 - INFO - >> GET /favicon.ico  from 127.0.0.1
+2026-10-07 17:37:03,656 - INFO - << GET /favicon.ico  ->  200
+2026-10-07 17:37:05,046 - INFO - >> GET /favicon.ico  from 127.0.0.1
+2026-10-07 17:37:05,047 - INFO - << GET /favicon.ico  ->  304
+2026-10-07 17:37:05,065 - INFO - >> GET /api/doctors?active_only=true  from 127.0.0.1
+2026-10-07 17:37:05,067 - INFO - >> GET /api/entries?limit=50  from 127.0.0.1
+2026-10-07 17:37:05,133 - INFO - << GET /api/doctors  ->  200
+2026-10-07 17:37:05,142 - INFO - << GET /api/entries  ->  200
+2026-10-07 17:37:08,408 - INFO - >> GET /api/doctors?active_only=true  from 127.0.0.1
+2026-10-07 17:37:08,411 - INFO - >> GET /favicon.ico  from 127.0.0.1
+2026-10-07 17:37:08,413 - INFO - << GET /favicon.ico  ->  304
+2026-10-07 17:37:08,448 - INFO - << GET /api/doctors  ->  200
+2026-10-07 17:37:12,115 - INFO - >> GET /api/entries?doctor_id=7&date_from=2026-09-30&date_to=2026-10-07  from 127.0.0.1
+2026-10-07 17:37:12,129 - INFO - << GET /api/entries  ->  200
+2026-10-07 17:37:29,188 - INFO - >> GET /api/balance_carry?doctor_id=7&month=2026-09  from 127.0.0.1
+2026-10-07 17:37:29,201 - INFO - << GET /api/balance_carry  ->  200
+2026-10-07 17:37:31,442 - INFO - >> GET /api/entries?doctor_id=7&date_from=2026-09-01&date_to=2026-09-30  from 127.0.0.1
+2026-10-07 17:37:31,449 - INFO - << GET /api/entries  ->  200
+2026-10-07 17:37:31,458 - INFO - >> POST /api/balance_carry/auto  from 127.0.0.1
+2026-10-07 17:37:31,478 - INFO - << POST /api/balance_carry/auto  ->  200
